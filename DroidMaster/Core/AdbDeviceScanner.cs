@@ -27,9 +27,9 @@ namespace DroidMaster.Core {
 				var duplicates = discoveredDevices.GroupBy(d => d.DeviceProperty)
 												  .Where(g => g.Skip(1).Any());
 				if (duplicates.Any()) {
-					Errors += "Skipping the following duplicate device IDs, which ADB cannot control:"
-						   + string.Join("\r\n", duplicates.Select(g =>
-								$"{g.Key}: {g.Count()} device" + (g.Skip(1).Any() ? "s" : "")));
+					AppendError("Skipping the following duplicate device IDs, which ADB cannot control:"
+							  + string.Join("\r\n", duplicates.Select(g =>
+									$"{g.Key}: {g.Count()} device" + (g.Skip(1).Any() ? "s" : ""))));
 				}
 
 				foreach (var device in discoveredDevices

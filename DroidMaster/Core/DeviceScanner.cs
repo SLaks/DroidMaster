@@ -29,6 +29,16 @@ namespace DroidMaster.Core {
 			get { return errors; }
 			protected set { errors = value; OnPropertyChanged(); }
 		}
+		void AppendError(string line) {
+			while (true) {
+				var original = Errors;
+				var newLog = string.IsNullOrEmpty(original) ? line : original + Environment.NewLine + line;
+				if (Interlocked.CompareExchange(ref errors, newLog, original) == original)
+					break;
+			}
+			OnPropertyChanged(nameof(Errors));
+		}
+
 
 		///<summary>Occurs when a property value is changed.</summary>
 		public event PropertyChangedEventHandler PropertyChanged;
