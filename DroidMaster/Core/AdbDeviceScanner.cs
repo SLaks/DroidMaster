@@ -37,7 +37,7 @@ namespace DroidMaster.Core {
 			});
 		}
 
-		class AdbDeviceConnection : IDeviceConnection {
+		sealed class AdbDeviceConnection : IDeviceConnection {
 			public AdbDeviceConnection(Device device) { Device = device; }
 			Device Device { get; }
 
@@ -67,6 +67,8 @@ namespace DroidMaster.Core {
 				});
 				return result;
 			}
+
+			void IDisposable.Dispose() { }	// Nothing to dispose
 
 			class ProgressAdapter : ISyncProgressMonitor {
 				readonly CancellationToken token;

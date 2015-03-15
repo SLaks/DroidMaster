@@ -35,12 +35,11 @@ namespace DroidMaster.Core {
 			if (DiscoveryError != null)
 				DiscoveryError(this, e);
 		}
-
 	}
 
 
 	///<summary>Interacts with a single Android device.</summary>
-	interface IDeviceConnection {
+	interface IDeviceConnection : IDisposable {
 		Task RebootAsync();
 		Task PushFileAsync(string localPath, string devicePath, CancellationToken token = default(CancellationToken), IProgress<double> progress = null);
 		Task PullFileAsync(string devicePath, string localPath, CancellationToken token = default(CancellationToken), IProgress<double> progress = null);
