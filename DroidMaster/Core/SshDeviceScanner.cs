@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
@@ -74,8 +75,20 @@ namespace DroidMaster.Core {
 			}
 
 			class ShellCommandResult : Stream, ICommandResult {
+				static readonly IReadOnlyCollection<Action<SshCommand, Stream>> StreamPropertySetters = new[] {
+					nameof(SshCommand.OutputStream),
+					nameof(SshCommand.ExtendedOutputStream)
+				}
+					.Select(typeof(SshCommand).GetProperty)
+					.Select(p => (Action<SshCommand, Stream>)Delegate.CreateDelegate(typeof(Action<SshCommand, Stream>), p.GetMethod))
+					.ToList();
+
 				public async Task<string> Execute(SshCommand command) {
-					await Task.Factory.FromAsync(command.BeginExecute, command.EndExecute, null);
+					var task = Task.Factory.FromAsync(command.BeginExecute, command.EndExecute, null);
+					foreach (var setter in StreamPropertySetters) {
+						setter(command, this);
+					}
+					await task;
 					return Output;
 				}
 
