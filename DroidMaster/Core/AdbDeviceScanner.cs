@@ -64,7 +64,10 @@ namespace DroidMaster.Core {
 
 			public ICommandResult ExecuteShellCommand(string command) {
 				var result = new OutputReporter();
-				result.Complete = Task.Run(() => Device.ExecuteShellCommand(command, result));
+				result.Complete = Task.Run(() => {
+					Device.ExecuteShellCommand(command, result);
+					return result.Output;
+				});
 				return result;
 			}
 
@@ -93,7 +96,7 @@ namespace DroidMaster.Core {
 			}
 
 			class OutputReporter : MultiLineReceiver, ICommandResult {
-				public Task Complete { get; set; }
+				public Task<string> Complete { get; set; }
 
 				string output;
 				public string Output {

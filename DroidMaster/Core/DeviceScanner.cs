@@ -29,7 +29,7 @@ namespace DroidMaster.Core {
 			get { return errors; }
 			protected set { errors = value; OnPropertyChanged(); }
 		}
-		void AppendError(string line) {
+		protected void AppendError(string line) {
 			while (true) {
 				var original = Errors;
 				var newLog = string.IsNullOrEmpty(original) ? line : original + Environment.NewLine + line;
@@ -68,8 +68,8 @@ namespace DroidMaster.Core {
 
 	///<summary>Reports the result of a shell command executing on the device.</summary>
 	interface ICommandResult : INotifyPropertyChanged {
-		///<summary>Resolved when the command has exited.</summary>
-		Task Complete { get; }
+		///<summary>Resolves to the complete output, after the command has exited.</summary>
+		Task<string> Complete { get; }
 		///<summary>The current output of the command.  This will update as the command prints more output, and will raise <see cref="INotifyPropertyChanged.PropertyChanged"/>.</summary>
 		string Output { get; }
 	}
