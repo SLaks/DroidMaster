@@ -22,14 +22,14 @@ namespace DroidMaster.Core {
 		public string UserName { get; set; }
 		public IEnumerable<PrivateKeyFile> PrivateKeys { get; set; }
 
-		public override async Task Scan() {
-			await Task.WhenAll(GetAddresses().Select(ip => ip.ToString()).Select(TryConnect));
+		public override Task Scan() {
+			return Task.WhenAll(GetAddresses().Select(ip => ip.ToString()).Select(TryConnect));
 		}
 
 		private async Task TryConnect(string a) {
 			try {
 				var client = new SshClient(a, Port, UserName, PrivateKeys.ToArray());
-				await Task.Run(new Action(client.Connect));
+				await Task.Run(new Action(client.Connect)).ConfigureAwait(false);
 
 				OnDeviceDiscovered(new DataEventArgs<IDeviceConnection>(new SshDeviceConnection(this, client)));
 			} catch (Exception ex) {
@@ -58,12 +58,12 @@ namespace DroidMaster.Core {
 
 			public async Task RebootAsync() {
 				// Source: http://android.stackexchange.com/a/43708/2569
-				await ExecuteShellCommand("am broadcast android.intent.action.ACTION_SHUTDOWN").Complete;
+				await ExecuteShellCommand("am broadcast android.intent.action.ACTION_SHUTDOWN").Complete.ConfigureAwait(false);
 				await Task.Delay(TimeSpan.FromSeconds(5));
 				try {
-					await ExecuteShellCommand("reboot").Complete;
+					await ExecuteShellCommand("reboot").Complete.ConfigureAwait(false);
 				} catch {
-					await ExecuteShellCommand("su -c reboot").Complete;
+					await ExecuteShellCommand("su -c reboot").Complete.ConfigureAwait(false);
 				}
 			}
 
@@ -96,7 +96,7 @@ namespace DroidMaster.Core {
 					foreach (var setter in StreamPropertySetters) {
 						setter(command, this);
 					}
-					await task;
+					await task.ConfigureAwait(false);
 					return Output;
 				}
 

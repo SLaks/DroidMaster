@@ -97,15 +97,15 @@ namespace DroidMaster.Core {
 		async Task Execute(Func<IDeviceConnection, Task> operation) {
 			while (true) {
 				var currentSource = volatileDeviceSource;
-				var connection = await currentSource.Task;
+				var connection = await currentSource.Task.ConfigureAwait(false);
 
-				using (await sourceLock.ReaderLockAsync()) {
+				using (await sourceLock.ReaderLockAsync().ConfigureAwait(false)) {
 					// If a different device was installed between waiting for the source and
 					// acquiring the lock, start over.
 					if (currentSource != volatileDeviceSource)
 						continue;
 					try {
-						await operation(connection);
+						await operation(connection).ConfigureAwait(false);
 						return;
 						// If a connection-level error occurs, clear the device, then wait for the next connection.
 					} catch (SocketException ex) {
@@ -139,7 +139,7 @@ namespace DroidMaster.Core {
 				OnPropertyChanged(nameof(CurrentConnectionMethod));
 				// Don't raise events inside a lock.
 				OnConnectionError(new ConnectionErrorEventArgs(currentSource.Task.Result, ex));
-				using (await sourceLock.WriterLockAsync())
+				using (await sourceLock.WriterLockAsync().ConfigureAwait(false))
 					currentSource.Task.Result.Dispose();
 			});
 		}
@@ -149,7 +149,7 @@ namespace DroidMaster.Core {
 			if (newDevice == null) throw new ArgumentNullException(nameof(newDevice));
 
 			// Wait for all commands to finish before replacing the connection.
-			using (await sourceLock.WriterLockAsync()) {
+			using (await sourceLock.WriterLockAsync().ConfigureAwait(false)) {
 				var oldDevice = volatileDeviceSource;
 
 				// If we're waiting for a connection, simply resolve the promise.

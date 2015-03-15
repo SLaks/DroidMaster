@@ -26,7 +26,7 @@ namespace DroidMaster.Core {
 
 		private async void Scanner_DeviceDiscovered(object sender, DataEventArgs<IDeviceConnection> e) {
 			try {
-				var id = await GetPersistentId(e.Data);
+				var id = await GetPersistentId(e.Data).ConfigureAwait(false);
 
 				// If we already have a PersistentDevice with this ID, replace
 				// it, and ignore (and do not dispose) the new instance. If we 
@@ -34,7 +34,7 @@ namespace DroidMaster.Core {
 				var newDevice = new PersistentDevice(id, e.Data);
 				var existingDevice = knownDevices.GetOrAdd(id, newDevice);
 				if (existingDevice != newDevice)
-					await existingDevice.SetDevice(e.Data);
+					await existingDevice.SetDevice(e.Data).ConfigureAwait(false);
 				else {
 					newDevice.ConnectionError += (s, ee) => {
 						OnDiscoveryError(new DataEventArgs<string>($"A connection error occurred on ee.DisposedConnection.ConnectionId:\r\n{ee.Error.Message}"));
@@ -50,11 +50,11 @@ namespace DroidMaster.Core {
 		const string DeviceIdPath = "/mnt/sdcard/droidmaster-id";
 		///<summary>Finds or creates a persistent unique identifier for a device.</summary>
 		private static async Task<string> GetPersistentId(IDeviceConnection device) {
-			var existingId = await device.ExecuteShellCommand("cat " + DeviceIdPath).Complete;
+			var existingId = await device.ExecuteShellCommand("cat " + DeviceIdPath).Complete.ConfigureAwait(false);
 			if (string.IsNullOrWhiteSpace(existingId))
 				return existingId;
 			var newId = $"SLaks/DroidMaster: First found at {DateTime.Now} as {device.ConnectionId}. {Guid.NewGuid()}";
-			await device.ExecuteShellCommand($"echo > {DeviceIdPath} {newId}").Complete;
+			await device.ExecuteShellCommand($"echo > {DeviceIdPath} {newId}").Complete.ConfigureAwait(false);
 			return newId;
 		}
 
