@@ -23,18 +23,12 @@ namespace DroidMaster.Core {
 		public event EventHandler<DataEventArgs<IDeviceConnection>> DeviceDiscovered;
 		///<summary>Raises the DeviceDiscovered event.</summary>
 		///<param name="e">A DataEventArgs object that provides the event data.</param>
-		internal protected virtual void OnDeviceDiscovered(DataEventArgs<IDeviceConnection> e) {
-			if (DeviceDiscovered != null)
-				DeviceDiscovered(this, e);
-		}
+		internal protected virtual void OnDeviceDiscovered(DataEventArgs<IDeviceConnection> e) => DeviceDiscovered?.Invoke(this, e);
 		///<summary>Occurs when an error or warning is encountered during device discovery.</summary>
 		public event EventHandler<DataEventArgs<string>> DiscoveryError;
 		///<summary>Raises the DiscoveryError event.</summary>
 		///<param name="e">A DataEventArgs object that provides the event data.</param>
-		internal protected virtual void OnDiscoveryError(DataEventArgs<string> e) {
-			if (DiscoveryError != null)
-				DiscoveryError(this, e);
-		}
+		internal protected virtual void OnDiscoveryError(DataEventArgs<string> e) => DiscoveryError?.Invoke(this, e);
 	}
 
 
