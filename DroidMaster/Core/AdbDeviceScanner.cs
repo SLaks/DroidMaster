@@ -13,6 +13,8 @@ using Managed.Adb;
 
 namespace DroidMaster.Core {
 	class AdbDeviceScanner : DeviceScanner {
+		public override string DisplayName => "USB";
+
 		public override Task Scan() {
 			return Task.Run(() => {
 				var discoveredDevices = AndroidDebugBridge.Instance.Devices;

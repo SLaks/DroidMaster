@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -34,7 +35,7 @@ namespace DroidMaster.Core {
 	///  4. Any connection that is passed to <see cref="SetDevice(IDeviceConnection)"/> will be eventually be disposed,
 	///     when it errors, is replaced with a new connection or when the entire class is disposed.
 	///</remarks>
-	class PersistentDevice : IDeviceConnection {
+	class PersistentDevice : IDeviceConnection, INotifyPropertyChanged {
 		///<summary>Controls reads and writes of <see cref="volatileDeviceSource"/>.</summary>
 		readonly AsyncReaderWriterLock sourceLock = new AsyncReaderWriterLock();
 		///<summary>The current device, if any, or a promise that will resolve to the current device once it arrives.</summary>
@@ -51,6 +52,7 @@ namespace DroidMaster.Core {
 		public PersistentDevice(string id, IDeviceConnection initialConnection) {
 			ConnectionId = id;
 			volatileDeviceSource = CompletedSource(initialConnection);
+			LatestConnectionId = initialConnection.ConnectionId;
 		}
 
 
@@ -121,7 +123,7 @@ namespace DroidMaster.Core {
 			}
 		}
 
-		///<summary>Releases the current connection, causing all future commands to wait for a new connection.</summary>
+		///<summary>Releases the current connection, causing all future commands to wait for a new connection.  This is called inside the read lock.</summary>
 		/// <param name="currentSource">The source instance holding the device that failed.  This must already be resolved.</param>
 		private void HandleConnectionError(TaskCompletionSource<IDeviceConnection> currentSource, Exception ex) {
 			var newSource = new TaskCompletionSource<IDeviceConnection>();
@@ -134,6 +136,7 @@ namespace DroidMaster.Core {
 			// Escape the read lock, then dispose the old connection in
 			// a write lock to make sure that all tasks have finished.
 			Task.Run(async () => {
+				OnPropertyChanged(nameof(CurrentConnectionMethod));
 				// Don't raise events inside a lock.
 				OnConnectionError(new ConnectionErrorEventArgs(currentSource.Task.Result, ex));
 				using (await sourceLock.WriterLockAsync())
@@ -157,11 +160,19 @@ namespace DroidMaster.Core {
 					volatileDeviceSource = CompletedSource(newDevice);
 					oldDevice.Task.Result.Dispose();
 				}
+				LatestConnectionId = newDevice.ConnectionId;
 			}
-
 			OnConnectionEstablished();
+			OnPropertyChanged(nameof(LatestConnectionId));
+			OnPropertyChanged(nameof(CurrentConnectionMethod));
 		}
 
+		///<summary>Gets an ID for the most recent connection.</summary>
+		public string LatestConnectionId { get; private set; }
+		///<summary>Gets the display name of the current connection type, or "Offline".</summary>
+		public string CurrentConnectionMethod => volatileDeviceSource.Task.IsCompleted ? volatileDeviceSource.Task.Result.Owner.DisplayName : "Offline";
+
+		#region Events
 		///<summary>Occurs when a connection-level error is thrown.</summary>
 		public event EventHandler<ConnectionErrorEventArgs> ConnectionError;
 		///<summary>Raises the ConnectionError event.</summary>
@@ -176,7 +187,15 @@ namespace DroidMaster.Core {
 		///<param name="e">An EventArgs object that provides the event data.</param>
 		protected internal virtual void OnConnectionEstablished(EventArgs e) => ConnectionEstablished?.Invoke(this, e);
 
-
+		///<summary>Occurs when a property value is changed.</summary>
+		public event PropertyChangedEventHandler PropertyChanged;
+		///<summary>Raises the PropertyChanged event.</summary>
+		///<param name="name">The name of the property that changed.</param>
+		protected virtual void OnPropertyChanged([CallerMemberName] string name = null) => OnPropertyChanged(new PropertyChangedEventArgs(name));
+		///<summary>Raises the PropertyChanged event.</summary>
+		///<param name="e">An EventArgs object that provides the event data.</param>
+		protected virtual void OnPropertyChanged(PropertyChangedEventArgs e) => PropertyChanged?.Invoke(this, e);
+		#endregion
 
 		static TaskCompletionSource<T> CompletedSource<T>(T value) {
 			var source = new TaskCompletionSource<T>();

@@ -12,6 +12,8 @@ using System.Threading.Tasks;
 namespace DroidMaster.Core {
 	///<summary>Scans for connected Android devices.</summary>
 	abstract class DeviceScanner {
+		///<summary>Gets the user-friendly display name for this connection method.</summary>
+		public abstract string DisplayName { get; }
 
 		///<summary>Rescans for connected devices.</summary>
 		public abstract Task Scan();

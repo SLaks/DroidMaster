@@ -14,6 +14,7 @@ using Renci.SshNet.Common;
 
 namespace DroidMaster.Core {
 	class SshDeviceScanner : DeviceScanner {
+		public override string DisplayName => "WiFi";
 		public IPAddress StartAddress { get; set; }
 		public IPAddress EndAddress { get; set; }
 		public short Port { get; set; }
