@@ -16,8 +16,10 @@ namespace DroidMaster.Core {
 		///<summary>Rescans for connected devices.</summary>
 		public abstract Task Scan();
 
-		protected void LogError(string text) { OnDiscoveryError(new DataEventArgs<string>(text)); }
+		///<summary>Attempts to reconnect to the specified connection ID, raising <see cref="DeviceDiscovered"/> if found.  This may have no effect.</summary>
+		public abstract Task ScanFor(string connectionId);
 
+		protected void LogError(string text) { OnDiscoveryError(new DataEventArgs<string>(text)); }
 
 		///<summary>Occurs when a device is discovered.</summary>
 		public event EventHandler<DataEventArgs<IDeviceConnection>> DeviceDiscovered;
@@ -40,6 +42,12 @@ namespace DroidMaster.Core {
 
 		///<summary>Executes a shell command on the device, exposing the output of the command as it executes.  This method returns immediately.</summary>
 		ICommandResult ExecuteShellCommand(string command);
+
+		///<summary>Gets a unique identifier for this connection.  This identifier may not be stable across reconnections to the same physical device.</summary>
+		string ConnectionId { get; }
+
+		///<summary>Gets the <see cref="DeviceScanner"/> that discovered this device.</summary>
+		DeviceScanner Owner { get; }
 	}
 
 	///<summary>Reports the result of a shell command executing on the device.</summary>

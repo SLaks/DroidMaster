@@ -32,14 +32,22 @@ namespace DroidMaster.Core {
 				foreach (var device in discoveredDevices
 											.Where(d => d.IsOnline)
 											.Except(duplicates.SelectMany(g => g))) {
-					OnDeviceDiscovered(new DataEventArgs<IDeviceConnection>((new AdbDeviceConnection(device))));
+					OnDeviceDiscovered(new DataEventArgs<IDeviceConnection>(new AdbDeviceConnection(this, device)));
 				}
 			});
 		}
 
+		// ADB has no concept of searching for a single device ID.
+		public override Task ScanFor(string connectionId) => Scan();
+
 		sealed class AdbDeviceConnection : IDeviceConnection {
-			public AdbDeviceConnection(Device device) { Device = device; }
 			Device Device { get; }
+			public DeviceScanner Owner { get; }
+			public string ConnectionId => Device.DeviceProperty;
+			public AdbDeviceConnection(DeviceScanner owner, Device device) {
+				Device = device;
+				Owner = owner;
+			}
 
 			public Task RebootAsync() {
 				return Task.Run(new Action(Device.Reboot));

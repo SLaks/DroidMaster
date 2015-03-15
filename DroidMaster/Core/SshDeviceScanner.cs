@@ -22,17 +22,21 @@ namespace DroidMaster.Core {
 		public IEnumerable<PrivateKeyFile> PrivateKeys { get; set; }
 
 		public override async Task Scan() {
-			await Task.WhenAll(GetAddresses().Select(async a => {
-				try {
-					var client = new SshClient(a.ToString(), Port, UserName, PrivateKeys.ToArray());
-					await Task.Run(new Action(client.Connect));
-
-					OnDeviceDiscovered(new DataEventArgs<IDeviceConnection>(new SshDeviceConnection(client)));
-				} catch (Exception ex) {
-					LogError(ex.Message);
-				}
-			}));
+			await Task.WhenAll(GetAddresses().Select(ip => ip.ToString()).Select(TryConnect));
 		}
+
+		private async Task TryConnect(string a) {
+			try {
+				var client = new SshClient(a, Port, UserName, PrivateKeys.ToArray());
+				await Task.Run(new Action(client.Connect));
+
+				OnDeviceDiscovered(new DataEventArgs<IDeviceConnection>(new SshDeviceConnection(this, client)));
+			} catch (Exception ex) {
+				LogError(ex.Message);
+			}
+		}
+
+		public override Task ScanFor(string connectionId) => TryConnect(connectionId);
 
 		IEnumerable<IPAddress> GetAddresses() {
 			var end = new BigInteger(EndAddress.GetAddressBytes());
@@ -43,9 +47,12 @@ namespace DroidMaster.Core {
 
 		class SshDeviceConnection : IDeviceConnection {
 			public SshClient Client { get; }
+			public DeviceScanner Owner { get; }
+			public string ConnectionId => Client.ConnectionInfo.Host;
 
-			public SshDeviceConnection(SshClient client) {
+			public SshDeviceConnection(SshDeviceScanner owner, SshClient client) {
 				Client = client;
+				Owner = owner;
 			}
 
 			public async Task RebootAsync() {
