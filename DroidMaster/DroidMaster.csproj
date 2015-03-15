@@ -41,6 +41,15 @@
     <Reference Include="MoreLinq">
       <HintPath>..\packages\Managed.Adb.1.0.0.110347\lib\MoreLinq.dll</HintPath>
     </Reference>
+    <Reference Include="Nito.AsyncEx">
+      <HintPath>..\packages\Nito.AsyncEx.3.0.1-pre\lib\net45\Nito.AsyncEx.dll</HintPath>
+    </Reference>
+    <Reference Include="Nito.AsyncEx.Concurrent">
+      <HintPath>..\packages\Nito.AsyncEx.3.0.1-pre\lib\net45\Nito.AsyncEx.Concurrent.dll</HintPath>
+    </Reference>
+    <Reference Include="Nito.AsyncEx.Enlightenment">
+      <HintPath>..\packages\Nito.AsyncEx.3.0.1-pre\lib\net45\Nito.AsyncEx.Enlightenment.dll</HintPath>
+    </Reference>
     <Reference Include="Renci.SshNet">
       <HintPath>..\packages\SSH.NET.2014.4.6-beta2\lib\net40\Renci.SshNet.dll</HintPath>
     </Reference>
@@ -73,6 +82,8 @@
     </Compile>
     <Compile Include="Core\AdbDeviceScanner.cs" />
     <Compile Include="Core\DeviceScanner.cs" />
+    <Compile Include="Core\PersistentDevice.cs" />
+    <Compile Include="Core\PersistentDeviceManager.cs" />
     <Compile Include="Core\SshDeviceScanner.cs" />
     <Compile Include="DataEventArgs.cs" />
     <Compile Include="MainWindow.xaml.cs">
