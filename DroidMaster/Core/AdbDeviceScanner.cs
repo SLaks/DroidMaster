@@ -14,20 +14,17 @@ using Managed.Adb;
 namespace DroidMaster.Core {
 	class AdbDeviceScanner : DeviceScanner {
 		public override Task Scan() {
-			Errors = "";
-			devices.Clear();
 			return Task.Run(() => {
 				var discoveredDevices = AndroidDebugBridge.Instance.Devices;
 				var offline = discoveredDevices.Where(d => d.IsOffline);
 				if (offline.Any()) {
-					Errors += $"Skipping {offline.Count()} offline device{(offline.Skip(1).Any() ? "s" : "")} (which cannot be controlled)\r\n"
-						   + string.Join(", ", offline.Select(d => d.DeviceProperty))
-						   + "\r\n\r\n";
+					LogError($"Skipping {offline.Count()} offline device{(offline.Skip(1).Any() ? "s" : "")} (which cannot be controlled)\r\n"
+						   + string.Join(", ", offline.Select(d => d.DeviceProperty)));
 				}
 				var duplicates = discoveredDevices.GroupBy(d => d.DeviceProperty)
 												  .Where(g => g.Skip(1).Any());
 				if (duplicates.Any()) {
-					AppendError("Skipping the following duplicate device IDs, which ADB cannot control:"
+					LogError("Skipping the following duplicate device IDs, which ADB cannot control:"
 							  + string.Join("\r\n", duplicates.Select(g =>
 									$"{g.Key}: {g.Count()} device" + (g.Skip(1).Any() ? "s" : ""))));
 				}
@@ -35,7 +32,7 @@ namespace DroidMaster.Core {
 				foreach (var device in discoveredDevices
 											.Where(d => d.IsOnline)
 											.Except(duplicates.SelectMany(g => g))) {
-					devices.Add(new AdbDeviceConnection(device));
+					OnDeviceDiscovered(new DataEventArgs<IDeviceConnection>((new AdbDeviceConnection(device))));
 				}
 			});
 		}

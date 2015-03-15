@@ -11,48 +11,31 @@ using System.Threading.Tasks;
 
 namespace DroidMaster.Core {
 	///<summary>Scans for connected Android devices.</summary>
-	abstract class DeviceScanner : INotifyPropertyChanged {
-		protected readonly ObservableCollection<IDeviceConnection> devices;
-		protected DeviceScanner() {
-			Devices = new ReadOnlyObservableCollection<IDeviceConnection>(devices);
-		}
+	abstract class DeviceScanner {
 
-		///<summary>Rescans for connected devices.  Calling this will immediately clear the <see cref="Devices"/> collection.</summary>
+		///<summary>Rescans for connected devices.</summary>
 		public abstract Task Scan();
 
-		///<summary>The currently discovered devices.  This will be empty until <see cref="Scan"/> is first called.</summary>
-		public ReadOnlyObservableCollection<IDeviceConnection> Devices { get; }
-
-		string errors;
-		///<summary>Gets any errors that occurred while discovering devices.</summary>
-		public string Errors {
-			get { return errors; }
-			protected set { errors = value; OnPropertyChanged(); }
-		}
-		protected void AppendError(string line) {
-			while (true) {
-				var original = Errors;
-				var newLog = string.IsNullOrEmpty(original) ? line : original + Environment.NewLine + line;
-				if (Interlocked.CompareExchange(ref errors, newLog, original) == original)
-					break;
-			}
-			OnPropertyChanged(nameof(Errors));
-		}
+		protected void LogError(string text) { OnDiscoveryError(new DataEventArgs<string>(text)); }
 
 
-		///<summary>Occurs when a property value is changed.</summary>
-		public event PropertyChangedEventHandler PropertyChanged;
-		///<summary>Raises the PropertyChanged event.</summary>
-		///<param name="name">The name of the property that changed.</param>
-		protected virtual void OnPropertyChanged([CallerMemberName] string name = null) {
-			OnPropertyChanged(new PropertyChangedEventArgs(name));
+		///<summary>Occurs when a device is discovered.</summary>
+		public event EventHandler<DataEventArgs<IDeviceConnection>> DeviceDiscovered;
+		///<summary>Raises the DeviceDiscovered event.</summary>
+		///<param name="e">A DataEventArgs object that provides the event data.</param>
+		internal protected virtual void OnDeviceDiscovered(DataEventArgs<IDeviceConnection> e) {
+			if (DeviceDiscovered != null)
+				DeviceDiscovered(this, e);
 		}
-		///<summary>Raises the PropertyChanged event.</summary>
-		///<param name="e">An EventArgs object that provides the event data.</param>
-		protected virtual void OnPropertyChanged(PropertyChangedEventArgs e) {
-			if (PropertyChanged != null)
-				PropertyChanged(this, e);
+		///<summary>Occurs when an error or warning is encountered during device discovery.</summary>
+		public event EventHandler<DataEventArgs<string>> DiscoveryError;
+		///<summary>Raises the DiscoveryError event.</summary>
+		///<param name="e">A DataEventArgs object that provides the event data.</param>
+		internal protected virtual void OnDiscoveryError(DataEventArgs<string> e) {
+			if (DiscoveryError != null)
+				DiscoveryError(this, e);
 		}
+
 	}
 
 
