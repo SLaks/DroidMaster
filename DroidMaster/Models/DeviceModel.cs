@@ -11,7 +11,7 @@ using DroidMaster.Core;
 namespace DroidMaster.Models {
 	///<summary>A wrapper around <see cref="PersistentDevice"/>.</summary>
 	///<remarks>The public members of this class form the API  for device scripts.</remarks>
-	public class DeviceModel : INotifyPropertyChanged {
+	public class DeviceModel : NotifyPropertyChanged {
 		internal DeviceModel(PersistentDevice device) {
 			Device = device;
 		}
@@ -28,18 +28,10 @@ namespace DroidMaster.Models {
 		///<summary>Gets a collection of WPF-bindable objects containing output from script commands.</summary>
 		public ObservableCollection<object> Log { get; } = new ObservableCollection<object>();
 
-		///<summary>Occurs when a property value is changed.</summary>
-		public event PropertyChangedEventHandler PropertyChanged;
-		///<summary>Raises the PropertyChanged event.</summary>
-		///<param name="name">The name of the property that changed.</param>
-		protected virtual void OnPropertyChanged([CallerMemberName] string name = null) => OnPropertyChanged(new PropertyChangedEventArgs(name));
-		///<summary>Raises the PropertyChanged event.</summary>
-		///<param name="e">An EventArgs object that provides the event data.</param>
-		protected virtual void OnPropertyChanged(PropertyChangedEventArgs e) => PropertyChanged?.Invoke(this, e);
 	}
 
 	///<summary>A WPF-bindable view model that reports the progress of an operation.</summary>
-	public class ProgressModel : IProgress<double>, INotifyPropertyChanged {
+	public class ProgressModel : NotifyPropertyChanged, IProgress<double> {
 		public void Report(double value) => Progress = value;
 
 		double progress;
@@ -55,15 +47,5 @@ namespace DroidMaster.Models {
 			get { return description; }
 			set { description = value; OnPropertyChanged(); }
 		}
-
-		///<summary>Occurs when a property value is changed.</summary>
-		public event PropertyChangedEventHandler PropertyChanged;
-		///<summary>Raises the PropertyChanged event.</summary>
-		///<param name="name">The name of the property that changed.</param>
-		protected virtual void OnPropertyChanged([CallerMemberName] string name = null) => OnPropertyChanged(new PropertyChangedEventArgs(name));
-		///<summary>Raises the PropertyChanged event.</summary>
-		///<param name="e">An EventArgs object that provides the event data.</param>
-		protected virtual void OnPropertyChanged(PropertyChangedEventArgs e) => PropertyChanged?.Invoke(this, e);
-
 	}
 }

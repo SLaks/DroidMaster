@@ -35,7 +35,7 @@ namespace DroidMaster.Core {
 	///  4. Any connection that is passed to <see cref="SetDevice(IDeviceConnection)"/> will be eventually be disposed,
 	///     when it errors, is replaced with a new connection or when the entire class is disposed.
 	///</remarks>
-	class PersistentDevice : IDeviceConnection, INotifyPropertyChanged {
+	class PersistentDevice : NotifyPropertyChanged, IDeviceConnection {
 		///<summary>Controls reads and writes of <see cref="volatileDeviceSource"/>.</summary>
 		readonly AsyncReaderWriterLock sourceLock = new AsyncReaderWriterLock();
 		///<summary>The current device, if any, or a promise that will resolve to the current device once it arrives.</summary>
@@ -186,15 +186,6 @@ namespace DroidMaster.Core {
 		///<summary>Raises the ConnectionEstablished event.</summary>
 		///<param name="e">An EventArgs object that provides the event data.</param>
 		protected internal virtual void OnConnectionEstablished(EventArgs e) => ConnectionEstablished?.Invoke(this, e);
-
-		///<summary>Occurs when a property value is changed.</summary>
-		public event PropertyChangedEventHandler PropertyChanged;
-		///<summary>Raises the PropertyChanged event.</summary>
-		///<param name="name">The name of the property that changed.</param>
-		protected virtual void OnPropertyChanged([CallerMemberName] string name = null) => OnPropertyChanged(new PropertyChangedEventArgs(name));
-		///<summary>Raises the PropertyChanged event.</summary>
-		///<param name="e">An EventArgs object that provides the event data.</param>
-		protected virtual void OnPropertyChanged(PropertyChangedEventArgs e) => PropertyChanged?.Invoke(this, e);
 		#endregion
 
 		static TaskCompletionSource<T> CompletedSource<T>(T value) {
