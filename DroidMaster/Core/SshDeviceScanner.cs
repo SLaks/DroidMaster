@@ -92,6 +92,7 @@ namespace DroidMaster.Core {
 					.ToList();
 
 				public async Task<string> Execute(SshCommand command) {
+					CommandText = command.CommandText;
 					var task = Task.Factory.FromAsync(command.BeginExecute, command.EndExecute, null);
 					foreach (var setter in StreamPropertySetters) {
 						setter(command, this);
@@ -101,6 +102,7 @@ namespace DroidMaster.Core {
 				}
 
 				public Task<string> Complete { get; set; }
+				public string CommandText { get; private set; }
 
 				string output;
 				public string Output { get { return output; } }

@@ -76,6 +76,7 @@ namespace DroidMaster.Core {
 			public Task<string> Complete { get; set; }
 
 			public string Output => Inner.Output;
+			public string CommandText => Inner.CommandText;
 
 			public event PropertyChangedEventHandler PropertyChanged;
 			public void OnPropertyChanged(PropertyChangedEventArgs e) { PropertyChanged?.Invoke(this, e); }

@@ -54,6 +54,8 @@ namespace DroidMaster.Core {
 
 	///<summary>Reports the result of a shell command executing on the device.</summary>
 	interface ICommandResult : INotifyPropertyChanged {
+		string CommandText { get; }
+
 		///<summary>Resolves to the complete output, after the command has exited.</summary>
 		Task<string> Complete { get; }
 		///<summary>The current output of the command.  This will update as the command prints more output, and will raise <see cref="INotifyPropertyChanged.PropertyChanged"/>.</summary>
