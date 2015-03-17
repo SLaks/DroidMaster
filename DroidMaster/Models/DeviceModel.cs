@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -28,10 +29,59 @@ namespace DroidMaster.Models {
 		///<summary>Gets a collection of WPF-bindable objects containing output from script commands.</summary>
 		public ObservableCollection<object> Log { get; } = new ObservableCollection<object>();
 
+		#region Device Method Wrappers
+		///<summary>Executes a shell command on the device, returning the full output.</summary>
+		public Task<string> ExecuteShellCommand(string command) {
+			var result = Device.ExecuteShellCommand(command);
+			Log.Add(result);
+			return result.Complete;
+		}
+
+		///<summary>Copies a file onto the device.  If root access is required, call <see cref="PushFileAsRoot"/> instead.</summary>
+		public Task PushFile(string localPath, string devicePath) {
+			var model = new ProgressModel("Pushing " + Path.GetFileName(localPath));
+			Status = model;
+			Log.Add(model);
+			return Device.PushFileAsync(localPath, devicePath, progress: model);
+		}
+
+		///<summary>Copies a file from the device to the local computer.  If root access is required, call <see cref="PullFileAsRoot"/> instead.</summary>
+		public Task PullFile(string devicePath, string localPath) {
+			var model = new ProgressModel("Pulling " + Path.GetFileName(localPath));
+			Status = model;
+			Log.Add(model);
+			return Device.PushFileAsync(devicePath, localPath, progress: model);
+		}
+
+		///<summary>Reboots the device.</summary>
+		public Task Reboot() {
+			Status = "Rebooting...";
+			Log.Add("Rebooting device");
+			return Device.RebootAsync();
+		}
+		#endregion
+
+		#region Script Helper Methods
+		///<summary>Copies a file onto the device as root.</summary>
+		public async Task PushFileAsRoot(string localPath, string devicePath) {
+			var tempPath = "/data/local/tmp/" + Guid.NewGuid();
+			await PushFile(localPath, tempPath);
+			await Device.ExecuteShellCommand($"su -c mv {tempPath} \"{devicePath}\"").Complete;
+		}
+
+		///<summary>Copies a file from the device to the local computer, as root.</summary>
+		public async Task PullFileAsRoot(string localPath, string devicePath) {
+			var tempPath = "/data/local/tmp/" + Guid.NewGuid();
+			await Device.ExecuteShellCommand($"su -c cp \"{devicePath}\" {tempPath}").Complete;
+			await PushFile(localPath, tempPath);
+			await Device.ExecuteShellCommand($"rm {tempPath}").Complete;
+		}
+		#endregion
 	}
 
 	///<summary>A WPF-bindable view model that reports the progress of an operation.</summary>
 	public class ProgressModel : NotifyPropertyChanged, IProgress<double> {
+		public ProgressModel(string description) { Description = description; }
 		public void Report(double value) => Progress = value;
 
 		double progress;
