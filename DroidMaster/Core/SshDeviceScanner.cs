@@ -20,7 +20,7 @@ namespace DroidMaster.Core {
 		public short Port { get; set; }
 
 		public string UserName { get; set; }
-		public IEnumerable<PrivateKeyFile> PrivateKeys { get; set; }
+		public string Password { get; set; }
 
 		public override Task Scan() {
 			return Task.WhenAll(GetAddresses().Select(ip => ip.ToString()).Select(TryConnect));
@@ -28,7 +28,7 @@ namespace DroidMaster.Core {
 
 		private async Task TryConnect(string a) {
 			try {
-				var client = new SshClient(a, Port, UserName, PrivateKeys.ToArray());
+				var client = new SshClient(a, Port, UserName, Password);
 				await Task.Run(new Action(client.Connect)).ConfigureAwait(false);
 
 				OnDeviceDiscovered(new DataEventArgs<IDeviceConnection>(new SshDeviceConnection(this, client)));
