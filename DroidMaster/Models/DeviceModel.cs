@@ -91,7 +91,9 @@ namespace DroidMaster.Models {
 
 	///<summary>A WPF-bindable view model that reports the progress of an operation.</summary>
 	public class ProgressModel : NotifyPropertyChanged, IProgress<double> {
+		///<summary>Creates a ProgressModel with the specified description.</summary>
 		public ProgressModel(string description) { Description = description; }
+		///<summary>Updates the progress (called via the <see cref="IProgress{T}"/> interface).</summary>
 		public void Report(double value) => Progress = value;
 
 		double progress;

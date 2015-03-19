@@ -126,6 +126,7 @@ namespace DroidMaster.Core {
 
 		///<summary>Releases the current connection, causing all future commands to wait for a new connection.  This is called inside the read lock.</summary>
 		/// <param name="currentSource">The source instance holding the device that failed.  This must already be resolved.</param>
+		/// <param name="ex">The exception from the device.</param>
 		private void HandleConnectionError(TaskCompletionSource<IDeviceConnection> currentSource, Exception ex) {
 			var newSource = new TaskCompletionSource<IDeviceConnection>();
 			// Immediately clear the stored source to opportunistically

@@ -18,6 +18,7 @@ namespace DroidMaster.UI {
 	/// Interaction logic for SourcePicker.xaml
 	/// </summary>
 	public partial class SourcePicker : Window {
+		///<summary>Creates a SourceFilePicker.</summary>
 		public SourcePicker() {
 			InitializeComponent();
 		}
