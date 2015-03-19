@@ -60,10 +60,11 @@ namespace DroidMaster.Scripting {
 			ScriptDirectory = scriptDirectory;
 		}
 
-		///<summary>Creates the projects referenced by every script.  This method can only be called once.</summary>
-		public void CreateReferenceProjects() {
-			if (ReferenceProjects != null)
-				throw new InvalidOperationException("Do not recreate reference projects within the same Workspace.");
+		///<summary>Refreshes the list of projects referenced by every script, updating the references for all script projects.</summary>
+		public void RefreshReferenceProjects() {
+			foreach (var id in ReferenceProjects ?? new ProjectId[0])
+				Workspace.TryApplyChanges(Workspace.CurrentSolution.RemoveProject(id));
+
 			ReferenceProjects = LanguageExtensions.Select(kvp => {
 				var projectName = "DroidMaster.References." + kvp.Value;
 				var project = Workspace.CurrentSolution
@@ -76,13 +77,21 @@ namespace DroidMaster.Scripting {
 				foreach (var path in Directory.EnumerateFiles(ScriptDirectory, "*" + kvp.Key)
 											  .Where(f => f.StartsWith("_"))) {
 					OpenDocument(project.Id, path, ReferenceWrappers[kvp.Value]);
-                }
+				}
 				return project.Id;
 			}).ToList();
+
+			foreach (var scriptProject in Workspace.CurrentSolution.ProjectIds.Except(ReferenceProjects)) {
+				Workspace.TryApplyChanges(Workspace.CurrentSolution
+					.WithProjectReferences(scriptProject, ReferenceProjects.Select(p => new ProjectReference(p)))
+				);
+			}
 		}
 
 		///<summary>Creates a project for the specified script file.</summary>
 		public Project CreateScriptProject(string scriptFile) {
+			if (ReferenceProjects == null) RefreshReferenceProjects();
+
 			var name = Path.GetFileNameWithoutExtension(scriptFile);
 			var language = LanguageExtensions[Path.GetExtension(scriptFile)];
 
@@ -95,7 +104,7 @@ namespace DroidMaster.Scripting {
 			Workspace.TryApplyChanges(project.Solution);
 
 			OpenDocument(project.Id, scriptFile, ScriptWrappers[language]);
-            return Workspace.CurrentSolution.GetProject(project.Id);
+			return Workspace.CurrentSolution.GetProject(project.Id);
 		}
 
 		///<summary>Opens a file path into a Roslyn <see cref="Document"/>, and adds the document to a project in the current solution.</summary>
