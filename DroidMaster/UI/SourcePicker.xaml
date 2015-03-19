@@ -1,0 +1,62 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DroidMaster.UI"
+        xmlns:Core="clr-namespace:DroidMaster.Core" x:Class="DroidMaster.UI.SourcePicker"
+        mc:Ignorable="d"
+        Title="Select Device Sources – DroidMaster" ResizeMode="CanMinimize" WindowStyle="SingleBorderWindow" SizeToContent="WidthAndHeight">
+	<Window.Resources>
+		<Core:SshDeviceScanner x:Key="sshSource" Port="23" />
+		<Core:AdbDeviceScanner x:Key="adbSource" />
+
+		<Style TargetType="Button">
+			<Setter Property="Padding" Value="8 2" />
+		</Style>
+	</Window.Resources>
+	<StackPanel>
+		<Label FontWeight="Bold">Select device discovery methods:</Label>
+		<CheckBox Content="{Binding DisplayName}" Name="enableAdb" DataContext="{StaticResource adbSource}"
+				  ToolTip="Discover devices connected over USB, using ADB.  This requires that the devices has USB debugging enabled." 
+				  Margin="10" />
+		<GroupBox x:Name="wifiGroup" DataContext="{StaticResource sshSource}">
+			<GroupBox.Header>
+				<CheckBox Content="{Binding DisplayName}" Name="enableSsh" 
+						  ToolTip="Discover devices connected to your WiFi network, using SSH.  This requires that the devices have an SSH server running." />
+			</GroupBox.Header>
+			<Grid IsEnabled="{Binding IsChecked, ElementName=EnableSsh}">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="*" />
+				</Grid.ColumnDefinitions>
+				<Grid.RowDefinitions>
+					<RowDefinition />
+					<RowDefinition />
+					<RowDefinition />
+					<RowDefinition />
+					<RowDefinition />
+				</Grid.RowDefinitions>
+				<Label   Grid.Row="0" Content="Start IP" />
+				<TextBox Grid.Row="0" Grid.Column="1" Text="{Binding StartAddress}" />
+
+				<Label   Grid.Row="1" Content="End IP" />
+				<TextBox Grid.Row="1" Grid.Column="1" Text="{Binding EndAddress}" />
+
+				<Label   Grid.Row="2" Content="Port" />
+				<TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Port}" />
+
+				<Label   Grid.Row="3" Content="User name" />
+				<TextBox Grid.Row="3" Grid.Column="1" Text="{Binding UserName}" />
+
+				<Label   Grid.Row="4" Content="Password" />
+				<PasswordBox Grid.Row="4" Grid.Column="1" Name="sshPassword" />
+			</Grid>
+		</GroupBox>
+
+		<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="10">
+			<Button Content="Open Script Editor" Click="OpenScript_Click" Margin="0,0,10,0" />
+			<Button Content="Connect" Click="OpenGrid_Click" IsDefault="True" />
+		</StackPanel>
+	</StackPanel>
+</Window>
