@@ -62,20 +62,30 @@ namespace DroidMaster.Models {
 		#endregion
 
 		#region Script Helper Methods
+		///<summary>A directory on the device to push temporary files to.  Use this directory if the file is not needed beyond the script lifetime, and be sure to delete the file when you're done.</summary>
+		public const string TempPath = "/data/local/tmp/";
+
 		///<summary>Copies a file onto the device as root.</summary>
 		public async Task PushFileAsRoot(string localPath, string devicePath) {
-			var tempPath = "/data/local/tmp/" + Guid.NewGuid();
+			var tempPath = TempPath + Guid.NewGuid();
 			await PushFile(localPath, tempPath);
 			await Device.ExecuteShellCommand($"su -c mv {tempPath} \"{devicePath}\"").Complete;
 		}
 
 		///<summary>Copies a file from the device to the local computer, as root.</summary>
 		public async Task PullFileAsRoot(string localPath, string devicePath) {
-			var tempPath = "/data/local/tmp/" + Guid.NewGuid();
+			var tempPath = TempPath + Guid.NewGuid();
 			await Device.ExecuteShellCommand($"su -c cp \"{devicePath}\" {tempPath}").Complete;
 			await PushFile(localPath, tempPath);
 			await Device.ExecuteShellCommand($"rm {tempPath}").Complete;
 		}
+
+		///<summary>Installs an APK file (from the computer) to the device.</summary>
+		public async Task InstallPackage(string apkPath) {
+			var tempPath = TempPath + Guid.NewGuid();
+			await PushFile(apkPath, tempPath);
+			await ExecuteShellCommand($"pm install {tempPath} && rm {tempPath}");
+        }
 		#endregion
 	}
 
