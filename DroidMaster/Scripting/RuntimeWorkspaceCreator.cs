@@ -13,16 +13,14 @@ namespace DroidMaster.Scripting {
 	class RuntimeWorkspaceCreator : WorkspaceCreator {
 		public RuntimeWorkspaceCreator(string scriptDirectory) : base(new AdhocWorkspace(), scriptDirectory) { }
 
-		protected override DocumentInfo OpenDocument(ProjectId projectId, string path, Tuple<string, string> wrapper) {
+		protected override void OpenDocument(ProjectId projectId, string path, Tuple<string, string> wrapper) {
 			var text = File.ReadAllText(path);
 			text = wrapper.Item1 + text + wrapper.Item2;
 
-			return DocumentInfo.Create(
-				DocumentId.CreateNewId(projectId, Path.GetFileName(path)),
-				Path.GetFileNameWithoutExtension(path),
-				sourceCodeKind: SourceCodeKind.Script,
-				loader: TextLoader.From(TextAndVersion.Create(SourceText.From(text), VersionStamp.Create(), path)),
-				filePath: path
+			Workspace.TryApplyChanges(Workspace.CurrentSolution
+				.GetProject(projectId)
+				.AddDocument(Path.GetFileName(path), SourceText.From(text), filePath: path)
+				.Project.Solution
 			);
 		}
 

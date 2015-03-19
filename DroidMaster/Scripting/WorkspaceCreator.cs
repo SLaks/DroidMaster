@@ -69,14 +69,14 @@ namespace DroidMaster.Scripting {
 				var project = Workspace.CurrentSolution
 					.AddProject(projectName, projectName, kvp.Value)
 					.AddMetadataReferences(StandardReferences.Select(CreateAssemblyReference));
+
+				project = project.WithParseOptions(project.ParseOptions.WithKind(SourceCodeKind.Script));
 				Workspace.TryApplyChanges(project.Solution);
 
 				foreach (var path in Directory.EnumerateFiles(ScriptDirectory, "*" + kvp.Key)
 											  .Where(f => f.StartsWith("_"))) {
-					Workspace.TryApplyChanges(Workspace.CurrentSolution.AddDocument(
-						OpenDocument(project.Id, path, ReferenceWrappers[kvp.Value])
-					));
-				}
+					OpenDocument(project.Id, path, ReferenceWrappers[kvp.Value]);
+                }
 				return project.Id;
 			}).ToList();
 		}
@@ -91,18 +91,19 @@ namespace DroidMaster.Scripting {
 				.AddMetadataReferences(StandardReferences.Select(CreateAssemblyReference))
 				.AddProjectReferences(ReferenceProjects.Select(p => new ProjectReference(p)));
 
-			Workspace.TryApplyChanges(project.Solution.AddDocument(
-				OpenDocument(project.Id, scriptFile, ScriptWrappers[language])
-			));
-			return Workspace.CurrentSolution.GetProject(project.Id);
+			project = project.WithParseOptions(project.ParseOptions.WithKind(SourceCodeKind.Script));
+			Workspace.TryApplyChanges(project.Solution);
+
+			OpenDocument(project.Id, scriptFile, ScriptWrappers[language]);
+            return Workspace.CurrentSolution.GetProject(project.Id);
 		}
 
-		///<summary>Opens a file path into a Roslyn <see cref="Document"/>.</summary>
+		///<summary>Opens a file path into a Roslyn <see cref="Document"/>, and adds the document to a project in the current solution.</summary>
 		/// <param name="projectId">The project to create the document in.</param>
 		/// <param name="path">The path to the file to open.</param>
 		/// <param name="wrapper">The strings to wrap the file contents in.</param>
 		///<remarks>In editor scenarios, this should create a TextBuffer.</remarks>
-		protected abstract DocumentInfo OpenDocument(ProjectId projectId, string path, Tuple<string, string> wrapper);
+		protected abstract void OpenDocument(ProjectId projectId, string path, Tuple<string, string> wrapper);
 
 		///<summary>Creates a <see cref="MetadataReference"/> to the specified assembly.</summary>
 		///<param name="assemblyName">The name of the assembly to reference.  This must either be part of the BCL or loaded into the current process.</param>
