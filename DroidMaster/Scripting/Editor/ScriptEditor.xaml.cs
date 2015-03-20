@@ -28,7 +28,8 @@ namespace DroidMaster.Scripting.Editor {
 			openMenu.ItemsSource = Directory
 				.EnumerateFiles(viewModel.WorkspaceCreator.ScriptDirectory)
 				.Where(p => WorkspaceCreator.LanguageExtensions.ContainsKey(Path.GetExtension(p)))
-				.Select(Path.GetFileName);
+				.Select(Path.GetFileName)
+				.ToList();
 		}
 	}
 }

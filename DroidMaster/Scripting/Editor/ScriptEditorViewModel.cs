@@ -46,8 +46,17 @@ namespace DroidMaster.Scripting.Editor {
 		private void OpenFile(string path) {
 			File.WriteAllText(path, "");
 			WorkspaceCreator.CreateScriptProject(path);
-			Files.Add(new ScriptFileViewModel(WorkspaceCreator.OpenDocuments[path], EditorFactory));
+			var fileModel = new ScriptFileViewModel(WorkspaceCreator.OpenDocuments[path], EditorFactory);
+			Files.Add(fileModel);
+			SelectedFile = fileModel;
 		}
+
+		ScriptFileViewModel selectedFile;
+		public ScriptFileViewModel SelectedFile {
+			get { return selectedFile; }
+			set { selectedFile = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasSelectedFile)); }
+		}
+		public bool HasSelectedFile => SelectedFile != null;
 	}
 
 	class ScriptFileViewModel : NotifyPropertyChanged {
