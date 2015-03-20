@@ -1,0 +1,66 @@
+﻿<Window x:Class="DroidMaster.Scripting.Editor.ScriptEditor" x:ClassModifier="internal"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DroidMaster.Scripting.Editor"
+        mc:Ignorable="d"
+		Name="window"
+        Title="ScriptEditor" Height="300" Width="300">
+	<Window.Resources>
+		<BooleanToVisibilityConverter x:Key="boolToVisibility" />
+	</Window.Resources>
+	<DockPanel LastChildFill="True">
+		<ToolBar DockPanel.Dock="Top">
+			<Menu>
+				<MenuItem Name="openMenu" SubmenuOpened="OpenMenu_SubmenuOpened">
+					<MenuItem.Header>
+						<StackPanel Orientation="Horizontal">
+							<Image Source="Images/Open.png" />
+							<Label>Open</Label>
+						</StackPanel>
+					</MenuItem.Header>
+					<MenuItem.ItemTemplate>
+						<DataTemplate>
+							<MenuItem Header="{Binding}"
+									  Command="{Binding OpenFileCommand, ElementName=window}" CommandParameter="{Binding}" />
+						</DataTemplate>
+					</MenuItem.ItemTemplate>
+				</MenuItem>
+			</Menu>
+			<Button Command="{Binding SelectedContent.SaveCommand, ElementName=tabs}">
+				<StackPanel Orientation="Horizontal">
+					<Image Source="Images/Save.png" />
+					<Label>Save</Label>
+				</StackPanel>
+			</Button>
+			<Button Command="{Binding NewFileCommand, ElementName=window}">
+				<StackPanel Orientation="Horizontal">
+					<Image Source="Images/New.png" />
+					<Label>New Script</Label>
+				</StackPanel>
+			</Button>
+		</ToolBar>
+		<TabControl Name="tabs">
+			<TabControl.ItemTemplate>
+				<DataTemplate>
+					<TabItem Content="{Binding TextView}">
+						<TabItem.Header>
+							<StackPanel Orientation="Horizontal">
+								<Label Content="•" ToolTip="This file has unsaved changes" Foreground="Red" 
+									   Visibility="{Binding IsDirty, Converter={StaticResource boolToVisibility}}" />
+								<Label Content="{Binding FileName}" />
+								<Button Background="Red" Content="×" 
+										Command="{Binding CloseFileCommand, ElementName=window}" CommandParameter="{Binding}" />
+								<StackPanel.InputBindings>
+									<MouseBinding MouseAction="MiddleClick" 
+												  Command="{Binding CloseFileCommand, ElementName=window}" CommandParameter="{Binding}" />
+								</StackPanel.InputBindings>
+							</StackPanel>
+						</TabItem.Header>
+					</TabItem>
+				</DataTemplate>
+			</TabControl.ItemTemplate>
+		</TabControl>
+	</DockPanel>
+</Window>

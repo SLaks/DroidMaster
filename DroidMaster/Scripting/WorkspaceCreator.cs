@@ -22,7 +22,7 @@ namespace DroidMaster.Scripting {
 		};
 
 		///<summary>Maps file extensions to Roslyn language names.</summary>
-		static readonly Dictionary<string, string> LanguageExtensions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) {
+		public static readonly Dictionary<string, string> LanguageExtensions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) {
 			{ ".cs", LanguageNames.CSharp },
 			{ ".vb", LanguageNames.VisualBasic },
 		};

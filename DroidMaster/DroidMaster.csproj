@@ -135,6 +135,10 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Scripting\Editor\EditorWorkspaceCreator.cs" />
+    <Compile Include="Scripting\Editor\ScriptEditor.xaml.cs">
+      <DependentUpon>ScriptEditor.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Scripting\Editor\ScriptEditorViewModel.cs" />
     <Compile Include="Scripting\RuntimeWorkspaceCreator.cs" />
     <Compile Include="Scripting\WorkspaceCreator.cs" />
     <Compile Include="UI\SourcePicker.xaml.cs">
@@ -150,6 +154,10 @@
     <Compile Include="Core\PersistentDeviceManager.cs" />
     <Compile Include="Core\SshDeviceScanner.cs" />
     <Compile Include="DataEventArgs.cs" />
+    <Page Include="Scripting\Editor\ScriptEditor.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="UI\SourcePicker.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -185,7 +193,15 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="Scripting\Editor\Images\New.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Scripting\Editor\Images\Save.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Scripting\Editor\Images\Open.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
