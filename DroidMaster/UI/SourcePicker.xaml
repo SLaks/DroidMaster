@@ -25,7 +25,7 @@
 				<CheckBox Content="{Binding DisplayName}" Name="enableSsh" 
 						  ToolTip="Discover devices connected to your WiFi network, using SSH.  This requires that the devices have an SSH server running." />
 			</GroupBox.Header>
-			<Grid IsEnabled="{Binding IsChecked, ElementName=EnableSsh}">
+			<Grid IsEnabled="{Binding IsChecked, ElementName=enableSsh}">
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="Auto" />
 					<ColumnDefinition Width="*" />
