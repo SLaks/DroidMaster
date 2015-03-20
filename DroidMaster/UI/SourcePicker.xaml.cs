@@ -13,6 +13,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using DroidMaster.Core;
+using Microsoft.VisualStudio.ComponentModelHost;
+using Nito.AsyncEx;
 using VSEmbed;
 
 namespace DroidMaster.UI {
@@ -32,20 +34,25 @@ namespace DroidMaster.UI {
 					VsServiceProvider.Initialize();
 				}
 
-				// Load the MEF container on a background thread, because it can be slow
-				(await Task.Run(() => OpenEditor())).Show();
+				await OpenEditor();
 			} catch (Exception ex) {
 				MessageBox.Show("Failed to initialize Roslyn editor.  Make sure that Visual Studio 2015 is installed.\r\n" + ex,
 								"DroidMaster", MessageBoxButton.OK, MessageBoxImage.Error);
 			}
 		}
+
 		// Must be JITted after VsLoader.Load so we can load ComponentModelHost
-		Scripting.Editor.ScriptEditor OpenEditor() {
-			return VsMefContainerBuilder
-				.CreateDefault()
-				.WithFilteredCatalogs(typeof(Scripting.WorkspaceCreator).Assembly)
-				.Build()
-				.GetService<ExportFactory<Scripting.Editor.ScriptEditor>>().CreateExport().Value;
+		static class LazyMefContainerHolder {
+			// Load the MEF container on a background thread, because it can be slow
+			public static readonly AsyncLazy<IComponentModel> Value = new AsyncLazy<IComponentModel>(() => Task.Run(() => VsMefContainerBuilder
+			   .CreateDefault()
+			   .WithFilteredCatalogs(typeof(Scripting.WorkspaceCreator).Assembly)
+			   .Build()));
+		}
+		async Task OpenEditor() {
+			(await LazyMefContainerHolder.Value)
+				.GetService<Scripting.Editor.ScriptEditor>()	// TODO: Get a factory to create multiple instances
+				.Show();
 		}
 
 
