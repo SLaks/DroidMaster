@@ -51,7 +51,10 @@ namespace DroidMaster.UI {
 		}
 		async Task OpenEditor() {
 			(await LazyMefContainerHolder.Value)
-				.GetService<Scripting.Editor.ScriptEditor>()	// TODO: Get a factory to create multiple instances
+				.GetService<ScriptEditorFactory>()
+				.Factory
+				.CreateExport()
+				.Value
 				.Show();
 		}
 
@@ -67,5 +70,11 @@ namespace DroidMaster.UI {
 				return;
 			}
 		}
+	}
+
+	[Export]
+	class ScriptEditorFactory {
+		[Import]
+		public ExportFactory<Scripting.Editor.ScriptEditor> Factory { get; set; }
 	}
 }
