@@ -46,8 +46,8 @@ namespace DroidMaster.Scripting {
 		};
 
 
-		///<summary>Gets the directory to load scripts from.</summary>
-		public string ScriptDirectory { get; }
+		///<summary>Gets or sets the directory to load scripts from.</summary>
+		public string ScriptDirectory { get; set; }
 
 		///<summary>Gets the Workspace manipulated by this instance.</summary>
 		public Workspace Workspace { get; }
@@ -55,9 +55,8 @@ namespace DroidMaster.Scripting {
 		///<summary>Gets project references to add to every script.</summary>
 		public IReadOnlyCollection<ProjectId> ReferenceProjects { get; private set; }
 
-		protected WorkspaceCreator(Workspace workspace, string scriptDirectory) {
+		protected WorkspaceCreator(Workspace workspace) {
 			Workspace = workspace;
-			ScriptDirectory = scriptDirectory;
 		}
 
 		///<summary>Refreshes the list of projects referenced by every script, updating the references for all script projects.</summary>

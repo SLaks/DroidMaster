@@ -11,7 +11,7 @@ using Microsoft.CodeAnalysis.Text;
 namespace DroidMaster.Scripting {
 	///<summary>A <see cref="WorkspaceCreator"/> that creates workspaces used to compile and run scripts.  This does not depend on Visual Studio.</summary>
 	class RuntimeWorkspaceCreator : WorkspaceCreator {
-		public RuntimeWorkspaceCreator(string scriptDirectory) : base(new AdhocWorkspace(), scriptDirectory) { }
+		public RuntimeWorkspaceCreator() : base(new AdhocWorkspace()) { }
 
 		protected override void OpenDocument(ProjectId projectId, string path, Tuple<string, string> wrapper) {
 			var text = File.ReadAllText(path);

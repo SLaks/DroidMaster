@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition.Hosting;
 using System.Composition;
 using System.IO;
 using System.Linq;
@@ -8,6 +9,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Host;
+using Microsoft.CodeAnalysis.Host.Mef;
+using Microsoft.VisualStudio.ComponentModelHost;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Projection;
@@ -28,7 +32,16 @@ namespace DroidMaster.Scripting.Editor {
 		[Import]
 		public IContentTypeRegistryService ContentTypes { get; set; }
 
-		public EditorWorkspaceCreator(HostServices host, string scriptDirectory) : base(new EditorWorkspace(host), scriptDirectory) { }
+		[ImportingConstructor]
+		public EditorWorkspaceCreator(SVsServiceProvider serviceProvider)
+			: base(new EditorWorkspace(MefV1HostServices.Create(GetExportProvider(serviceProvider)))) {
+		}
+
+		private static ExportProvider GetExportProvider(SVsServiceProvider serviceProvider)
+			=> ((IComponentModel)serviceProvider.GetService(typeof(SComponentModel))).DefaultExportProvider;
+
+
+		//static ExportProvider GetExportProvider(IServiceProvider ser
 
 		readonly Dictionary<string, ITextDocument> openDocuments = new Dictionary<string, ITextDocument>(StringComparer.OrdinalIgnoreCase);
 		///<summary>Maps full paths on disk to open <see cref="ITextDocument"/>s.</summary>
