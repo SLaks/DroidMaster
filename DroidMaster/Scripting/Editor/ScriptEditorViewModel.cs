@@ -35,7 +35,7 @@ namespace DroidMaster.Scripting.Editor {
 				InitialDirectory = WorkspaceCreator.ScriptDirectory,
 				Filter = string.Join("|", Scripting.WorkspaceCreator.LanguageExtensions
 					.OrderBy(kvp => kvp.Key)
-					.Select(kvp => $"{kvp.Value}|*{kvp.Key}"))
+					.Select(kvp => $"{kvp.Value} script files|*{kvp.Key}"))
 			};
 			if (dialog.ShowDialog() != true)
 				return;
