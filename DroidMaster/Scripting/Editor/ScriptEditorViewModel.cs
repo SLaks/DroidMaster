@@ -40,11 +40,13 @@ namespace DroidMaster.Scripting.Editor {
 			if (dialog.ShowDialog() != true)
 				return;
 
+			File.WriteAllText(dialog.FileName, "");
+			if (Path.GetFileName(dialog.FileName).StartsWith("_"))
+				WorkspaceCreator.RefreshReferenceProjects();
 			OpenFile(dialog.FileName);
 		});
 
 		private void OpenFile(string path) {
-			File.WriteAllText(path, "");
 			WorkspaceCreator.CreateScriptProject(path);
 			var fileModel = new ScriptFileViewModel(WorkspaceCreator.OpenDocuments[path], EditorFactory);
 			Files.Add(fileModel);

@@ -30,6 +30,7 @@ namespace DroidMaster.Scripting.Editor {
 				.Where(p => WorkspaceCreator.LanguageExtensions.ContainsKey(Path.GetExtension(p)))
 				.Select(Path.GetFileName)
 				.ToList();
+			viewModel.WorkspaceCreator.RefreshReferenceProjects();
 		}
 	}
 }
