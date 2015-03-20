@@ -42,26 +42,28 @@
 				</StackPanel>
 			</Button>
 		</ToolBar>
-		<TabControl Name="tabs">
+		<TabControl Name="tabs" ItemsSource="{Binding Files}">
 			<TabControl.ItemTemplate>
 				<DataTemplate>
-					<TabItem Content="{Binding TextView}">
-						<TabItem.Header>
-							<StackPanel Orientation="Horizontal">
-								<Label Content="•" ToolTip="This file has unsaved changes" Foreground="Red" 
-									   Visibility="{Binding IsDirty, Converter={StaticResource boolToVisibility}}" />
-								<Label Content="{Binding FileName}" />
-								<Button Background="Red" Content="×" 
-										Command="{Binding DataContext.CloseFileCommand, ElementName=window}" CommandParameter="{Binding}" />
-								<StackPanel.InputBindings>
-									<MouseBinding MouseAction="MiddleClick" 
-												  Command="{Binding DataContext.CloseFileCommand, ElementName=window}" CommandParameter="{Binding}" />
-								</StackPanel.InputBindings>
-							</StackPanel>
-						</TabItem.Header>
-					</TabItem>
+					<StackPanel Orientation="Horizontal">
+						<Label Content="•" ToolTip="This file has unsaved changes" Foreground="Red" 
+							   Visibility="{Binding IsDirty, Converter={StaticResource boolToVisibility}}" />
+						<TextBlock Text="{Binding FileName}" VerticalAlignment="Center" />
+						<Button Content="×" ToolTip="Close File" Foreground="Red" FontWeight="Bold" FontSize="14"
+								BorderThickness="0" VerticalAlignment="Center" Margin="5 0 0 0" Width="{Binding ActualHeight, RelativeSource={RelativeSource Self}}"
+								Command="{Binding DataContext.CloseFileCommand, ElementName=window}" CommandParameter="{Binding}" />
+						<StackPanel.InputBindings>
+							<MouseBinding MouseAction="MiddleClick" 
+										  Command="{Binding DataContext.CloseFileCommand, ElementName=window}" CommandParameter="{Binding}" />
+						</StackPanel.InputBindings>
+					</StackPanel>
 				</DataTemplate>
 			</TabControl.ItemTemplate>
+			<TabControl.ContentTemplate>
+				<DataTemplate>
+					<ContentControl Content="{Binding TextView.HostControl}" />
+				</DataTemplate>
+			</TabControl.ContentTemplate>
 		</TabControl>
 	</DockPanel>
 </Window>
