@@ -80,7 +80,14 @@ namespace DroidMaster.Scripting.Editor {
 			var prefixBuffer = BufferFactory.CreateTextBuffer(wrapper.Item1, contentType);
 			var suffixBuffer = BufferFactory.CreateTextBuffer(wrapper.Item2, contentType);
 
-			var outerBuffer = ProjectionFactory.CreateProjectionBuffer(null, new[] { prefixBuffer, innerTextDocument.TextBuffer, suffixBuffer }, ProjectionBufferOptions.None);
+			var outerBuffer = ProjectionFactory.CreateProjectionBuffer(null,
+				new[] { prefixBuffer, innerTextDocument.TextBuffer, suffixBuffer }.Select(b =>
+					b.CurrentSnapshot.CreateTrackingSpan(
+						new Span(0, b.CurrentSnapshot.Length),
+						SpanTrackingMode.EdgeInclusive)
+				).ToList<object>(),
+				ProjectionBufferOptions.None
+			);
 			Workspace.CreateDocument(projectId, outerBuffer);
 		}
 	}
