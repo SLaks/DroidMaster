@@ -41,13 +41,15 @@ namespace DroidMaster.Scripting.Editor {
 				return;
 
 			File.WriteAllText(dialog.FileName, "");
-			if (Path.GetFileName(dialog.FileName).StartsWith("_"))
-				WorkspaceCreator.RefreshReferenceProjects();
 			OpenFile(dialog.FileName);
 		});
 
 		private void OpenFile(string path) {
-			WorkspaceCreator.CreateScriptProject(path);
+			if (Path.GetFileName(path).StartsWith("_"))
+				WorkspaceCreator.RefreshReferenceProjects();
+			else
+				WorkspaceCreator.CreateScriptProject(path);
+
 			var fileModel = new ScriptFileViewModel(WorkspaceCreator.FileDocuments[path], WorkspaceCreator.EditorBuffers[path], EditorFactory);
 			Files.Add(fileModel);
 			SelectedFile = fileModel;
@@ -68,8 +70,8 @@ namespace DroidMaster.Scripting.Editor {
 
 			TextView = editorFactory.CreateTextViewHost(
 				editorFactory.CreateTextView(editorBuffer, editorFactory.CreateTextViewRoleSet(
-					PredefinedTextViewRoles.Analyzable, PredefinedTextViewRoles.Document, PredefinedTextViewRoles.Editable, 
-					PredefinedTextViewRoles.Interactive, PredefinedTextViewRoles.PrimaryDocument, 
+					PredefinedTextViewRoles.Analyzable, PredefinedTextViewRoles.Document, PredefinedTextViewRoles.Editable,
+					PredefinedTextViewRoles.Interactive, PredefinedTextViewRoles.PrimaryDocument,
 					PredefinedTextViewRoles.Structured, PredefinedTextViewRoles.Zoomable)
 				), true
 			);
