@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
@@ -29,7 +30,21 @@ namespace DroidMaster.Scripting.Editor {
 			OpenFile(Path.GetFullPath(Path.Combine(WorkspaceCreator.ScriptDirectory, path)))
 		);
 
-		public ICommand CloseFileCommand => new ActionCommand<ScriptFileViewModel>(vm => Files.Remove(vm));
+		public ICommand CloseFileCommand => new ActionCommand<ScriptFileViewModel>(vm => {
+			if (vm.IsDirty) {
+				switch (MessageBox.Show($"Do you want to save changes to {vm.FileName}?",
+										"DroidMaster", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning)) {
+					case MessageBoxResult.Cancel:
+						return;
+					case MessageBoxResult.Yes:
+						vm.Document.Save();
+						break;
+					case MessageBoxResult.No:
+						break;
+				}
+			}
+			Files.Remove(vm);
+		});
 		public ICommand NewFileCommand => new ActionCommand(() => {
 			var dialog = new SaveFileDialog {
 				InitialDirectory = WorkspaceCreator.ScriptDirectory,
