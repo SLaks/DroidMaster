@@ -51,7 +51,7 @@
         <PropertyValue name="EncapsulateField_UpdateAllReferences">0</PropertyValue>
         <PropertyValue name="EnterOutliningModeOnOpen">0</PropertyValue>
         <PropertyValue name="ExtractInterface_SelectAll">0</PropertyValue>
-        <PropertyValue name="ExtractMethod_AllowMovingDeclaration">0</PropertyValue>
+        <PropertyValue name="ExtractMethod_AllowMovingDeclaration">1</PropertyValue>
         <PropertyValue name="ExtractMethod_DoNotPutOutOrRefOnStruct">1</PropertyValue>
         <PropertyValue name="FilterKeywordsContextually">1</PropertyValue>
         <PropertyValue name="FilterToAllowableTypes">1</PropertyValue>

@@ -43,9 +43,14 @@ namespace DroidMaster.Scripting.Editor {
 
 		//static ExportProvider GetExportProvider(IServiceProvider ser
 
-		readonly Dictionary<string, ITextDocument> openDocuments = new Dictionary<string, ITextDocument>(StringComparer.OrdinalIgnoreCase);
+		readonly Dictionary<string, ITextDocument> fileDocuments = new Dictionary<string, ITextDocument>(StringComparer.OrdinalIgnoreCase);
 		///<summary>Maps full paths on disk to open <see cref="ITextDocument"/>s.</summary>
-		public IReadOnlyDictionary<string, ITextDocument> OpenDocuments => openDocuments;
+		public IReadOnlyDictionary<string, ITextDocument> FileDocuments => fileDocuments;
+
+		readonly Dictionary<string, IElisionBuffer> editorBuffers = new Dictionary<string, IElisionBuffer>(StringComparer.OrdinalIgnoreCase);
+		///<summary>Maps full paths on disk to <see cref="IElisionBuffer"/>s to show in the editor.</summary>
+		public IReadOnlyDictionary<string, IElisionBuffer> EditorBuffers => editorBuffers;
+
 
 		protected override MetadataReference CreateAssemblyReference(string assemblyName) {
 			// TODO: Better check for framework vs. non-framework assemblies.
@@ -67,28 +72,38 @@ namespace DroidMaster.Scripting.Editor {
 		protected override void OpenDocument(ProjectId projectId, string path, Tuple<string, string> wrapper) {
 			// I create an inner buffer containing the contents of the file,
 			// then wrap it in a projection buffer with the prefix & suffix.
+			// The inner buffers only exist to provide content for the outer
+			// buffer, so they have ContentType text.  The projection buffer
+			// exists to provide Roslyn's language services; it has a Roslyn
+			// content type and is linked to the Workspace. Finally, we make
+			// an elision buffer to display in the editor, eliding the outer
+			// wrappers from the projection buffer.
 
 			path = Path.GetFullPath(path);
 
 			var contentType = ContentTypes.GetContentType(LanguageContentTypes[Workspace.CurrentSolution.GetProject(projectId).Language]);
-			ITextDocument innerTextDocument;
-			if (!OpenDocuments.TryGetValue(path, out innerTextDocument)) {
-				innerTextDocument = DocumentFactory.CreateAndLoadTextDocument(path, contentType);
-				openDocuments.Add(path, innerTextDocument);
+			IElisionBuffer elisionBuffer;
+			if (!EditorBuffers.TryGetValue(path, out elisionBuffer)) {
+				var fileDocument = DocumentFactory.CreateAndLoadTextDocument(path, ContentTypes.GetContentType("text"));
+				fileDocuments.Add(path, fileDocument);
+
+				var prefixBuffer = BufferFactory.CreateTextBuffer(wrapper.Item1, contentType);
+				var suffixBuffer = BufferFactory.CreateTextBuffer(wrapper.Item2, contentType);
+
+				var fileSnapshot = fileDocument.TextBuffer.CurrentSnapshot;
+				var outerBuffer = ProjectionFactory.CreateProjectionBuffer(null, new object[] {
+					wrapper.Item1,
+					fileSnapshot.CreateTrackingSpan(new Span(0, fileSnapshot.Length), SpanTrackingMode.EdgeInclusive),
+					wrapper.Item2
+				}, ProjectionBufferOptions.None, contentType);
+
+				elisionBuffer = ProjectionFactory.CreateElisionBuffer(null, new NormalizedSnapshotSpanCollection(
+					new SnapshotSpan(outerBuffer.CurrentSnapshot, wrapper.Item1.Length, fileSnapshot.Length)
+				), ElisionBufferOptions.None);
+				editorBuffers.Add(path, elisionBuffer);
 			}
 
-			var prefixBuffer = BufferFactory.CreateTextBuffer(wrapper.Item1, contentType);
-			var suffixBuffer = BufferFactory.CreateTextBuffer(wrapper.Item2, contentType);
-
-			var outerBuffer = ProjectionFactory.CreateProjectionBuffer(null,
-				new[] { prefixBuffer, innerTextDocument.TextBuffer, suffixBuffer }.Select(b =>
-					b.CurrentSnapshot.CreateTrackingSpan(
-						new Span(0, b.CurrentSnapshot.Length),
-						SpanTrackingMode.EdgeInclusive)
-				).ToList<object>(),
-				ProjectionBufferOptions.None
-			);
-			Workspace.CreateDocument(projectId, outerBuffer);
+			Workspace.CreateDocument(projectId, elisionBuffer.SourceBuffer);
 		}
 	}
 }

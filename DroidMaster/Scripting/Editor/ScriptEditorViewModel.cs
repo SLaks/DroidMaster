@@ -48,7 +48,7 @@ namespace DroidMaster.Scripting.Editor {
 
 		private void OpenFile(string path) {
 			WorkspaceCreator.CreateScriptProject(path);
-			var fileModel = new ScriptFileViewModel(WorkspaceCreator.OpenDocuments[path], EditorFactory);
+			var fileModel = new ScriptFileViewModel(WorkspaceCreator.FileDocuments[path], WorkspaceCreator.EditorBuffers[path], EditorFactory);
 			Files.Add(fileModel);
 			SelectedFile = fileModel;
 		}
@@ -62,11 +62,17 @@ namespace DroidMaster.Scripting.Editor {
 	}
 
 	class ScriptFileViewModel : NotifyPropertyChanged {
-		public ScriptFileViewModel(ITextDocument doc, ITextEditorFactoryService editorFactory) {
+		public ScriptFileViewModel(ITextDocument doc, ITextBuffer editorBuffer, ITextEditorFactoryService editorFactory) {
 			Document = doc;
 			doc.DirtyStateChanged += (s, e) => OnPropertyChanged(nameof(IsDirty));
 
-			TextView = editorFactory.CreateTextViewHost(editorFactory.CreateTextView(doc.TextBuffer), true);
+			TextView = editorFactory.CreateTextViewHost(
+				editorFactory.CreateTextView(editorBuffer, editorFactory.CreateTextViewRoleSet(
+					PredefinedTextViewRoles.Analyzable, PredefinedTextViewRoles.Document, PredefinedTextViewRoles.Editable, 
+					PredefinedTextViewRoles.Interactive, PredefinedTextViewRoles.PrimaryDocument, 
+					PredefinedTextViewRoles.Structured, PredefinedTextViewRoles.Zoomable)
+				), true
+			);
 			TextView.TextView.Options.SetOptionValue(DefaultTextViewHostOptions.LineNumberMarginId, true);
 			TextView.TextView.Options.SetOptionValue(DefaultTextViewHostOptions.ChangeTrackingId, true);
 			TextView.TextView.Options.SetOptionValue(DefaultTextViewHostOptions.ShowScrollBarAnnotationsOptionId, true);
