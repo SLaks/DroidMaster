@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using Microsoft.CodeAnalysis;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.Win32;
@@ -59,6 +60,39 @@ namespace DroidMaster.Scripting.Editor {
 			}
 			Files.Remove(vm);
 		});
+
+		///<summary>Maps Roslyn language names to comment line prefixes.</summary>
+		static readonly IReadOnlyDictionary<string, string> CommentPrefixes = new Dictionary<string, string> {
+			{ LanguageNames.CSharp, "// " },
+			{ LanguageNames.VisualBasic, "' " }
+		};
+
+		const string ScriptComment = @"
+DroidMaster Device Script
+—————————————————————————
+This script will run against connected Android devices.
+Write code using the pre-supplied `device` parameter to
+control the current device.  Your code is wrapped in an
+async method; you must await calls to every method.
+
+To create reusable methods or classes, make a file that
+starts with an underscore; it will be referenced by all
+script files.";
+		const string ReferenceComment = @"
+DroidMaster Reference Script
+————————————————————————————
+
+This file will be referenced by every device script.  
+You can write helper classes, methods, and extension
+methods here, and they will be available in scripts.
+All scripts run in the same AppDomain, so you should
+not use any static mutable state.
+
+Scripts in any language will reference all reference
+files in all languages.  Reference files in the same
+language also reference each-other.  Reference files
+in different languages do not reference each-other.";
+
 		public ICommand NewFileCommand => new ActionCommand(() => {
 			var dialog = new SaveFileDialog {
 				InitialDirectory = WorkspaceCreator.ScriptDirectory,
@@ -69,7 +103,11 @@ namespace DroidMaster.Scripting.Editor {
 			if (dialog.ShowDialog() != true)
 				return;
 
-			File.WriteAllText(dialog.FileName, "");
+			var isReference = Path.GetFileName(dialog.FileName).StartsWith("_");
+			File.WriteAllText(dialog.FileName, (isReference ? ReferenceComment : ScriptComment)
+				.Replace("\r\n", "\r\n" + CommentPrefixes[Scripting.WorkspaceCreator.LanguageExtensions[Path.GetExtension(dialog.FileName)]]) 
+				.Trim()
+			  + "\r\n");
 			OpenFile(dialog.FileName);
 		});
 
