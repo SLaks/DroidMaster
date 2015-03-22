@@ -12,7 +12,7 @@ using DroidMaster.Core;
 namespace DroidMaster.Models {
 	///<summary>A wrapper around <see cref="PersistentDevice"/>.</summary>
 	///<remarks>The public members of this class form the API  for device scripts.</remarks>
-	public class DeviceModel : NotifyPropertyChanged {
+	public partial class DeviceModel : NotifyPropertyChanged {
 		internal DeviceModel(PersistentDevice device) {
 			Device = device;
 		}

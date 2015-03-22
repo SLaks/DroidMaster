@@ -136,6 +136,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Models\DeviceModel_Status.cs" />
     <Compile Include="Scripting\Editor\EditorWorkspaceCreator.cs" />
     <Compile Include="Scripting\Editor\ScriptEditor.xaml.cs">
       <DependentUpon>ScriptEditor.xaml</DependentUpon>
