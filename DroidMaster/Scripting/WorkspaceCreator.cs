@@ -61,8 +61,11 @@ namespace DroidMaster.Scripting {
 
 		///<summary>Refreshes the list of projects referenced by every script, updating the references for all script projects.</summary>
 		public void RefreshReferenceProjects() {
-			foreach (var id in ReferenceProjects ?? new ProjectId[0])
-				Workspace.TryApplyChanges(Workspace.CurrentSolution.RemoveProject(id));
+			foreach (var projectId in ReferenceProjects ?? new ProjectId[0]) {
+				foreach (var documentId in Workspace.CurrentSolution.GetProject(projectId).DocumentIds)
+					CloseDocument(documentId);
+				Workspace.TryApplyChanges(Workspace.CurrentSolution.RemoveProject(projectId));
+			}
 
 			ReferenceProjects = LanguageExtensions.Select(kvp => {
 				var projectName = "DroidMaster.References." + kvp.Value;
@@ -70,11 +73,12 @@ namespace DroidMaster.Scripting {
 					.AddProject(projectName, projectName, kvp.Value)
 					.AddMetadataReferences(StandardReferences.Select(CreateAssemblyReference));
 
-				project = project.WithParseOptions(project.ParseOptions.WithKind(SourceCodeKind.Script));
+				// Reference projects cannot have Script documents because they wrap
+				// everything in an internal Script class.
 				Workspace.TryApplyChanges(project.Solution);
 
 				foreach (var path in Directory.EnumerateFiles(ScriptDirectory, "*" + kvp.Key)
-											  .Where(f => f.StartsWith("_"))) {
+											  .Where(f => Path.GetFileName(f).StartsWith("_"))) {
 					OpenDocument(project.Id, path, ReferenceWrappers[kvp.Value]);
 				}
 				return project.Id;
@@ -112,6 +116,9 @@ namespace DroidMaster.Scripting {
 		/// <param name="wrapper">The strings to wrap the file contents in.</param>
 		///<remarks>In editor scenarios, this should create a TextBuffer.</remarks>
 		protected abstract void OpenDocument(ProjectId projectId, string path, Tuple<string, string> wrapper);
+
+		///<summary>Closes a document that was previously opened by <see cref="OpenDocument"/>, if necessary.</summary>
+		protected virtual void CloseDocument(DocumentId documentId) { }
 
 		///<summary>Creates a <see cref="MetadataReference"/> to the specified assembly.</summary>
 		///<param name="assemblyName">The name of the assembly to reference.  This must either be part of the BCL or loaded into the current process.</param>

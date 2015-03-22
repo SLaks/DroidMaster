@@ -41,8 +41,6 @@ namespace DroidMaster.Scripting.Editor {
 			=> ((IComponentModel)serviceProvider.GetService(typeof(SComponentModel))).DefaultExportProvider;
 
 
-		//static ExportProvider GetExportProvider(IServiceProvider ser
-
 		readonly Dictionary<string, ITextDocument> fileDocuments = new Dictionary<string, ITextDocument>(StringComparer.OrdinalIgnoreCase);
 		///<summary>Maps full paths on disk to open <see cref="ITextDocument"/>s.</summary>
 		public IReadOnlyDictionary<string, ITextDocument> FileDocuments => fileDocuments;
@@ -50,7 +48,6 @@ namespace DroidMaster.Scripting.Editor {
 		readonly Dictionary<string, IElisionBuffer> editorBuffers = new Dictionary<string, IElisionBuffer>(StringComparer.OrdinalIgnoreCase);
 		///<summary>Maps full paths on disk to <see cref="IElisionBuffer"/>s to show in the editor.</summary>
 		public IReadOnlyDictionary<string, IElisionBuffer> EditorBuffers => editorBuffers;
-
 
 		protected override MetadataReference CreateAssemblyReference(string assemblyName) {
 			// TODO: Better check for framework vs. non-framework assemblies.
@@ -105,5 +102,7 @@ namespace DroidMaster.Scripting.Editor {
 
 			Workspace.CreateDocument(projectId, elisionBuffer.SourceBuffer);
 		}
+
+		protected override void CloseDocument(DocumentId documentId) => Workspace.CloseDocument(documentId);
 	}
 }
