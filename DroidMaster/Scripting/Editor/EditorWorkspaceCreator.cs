@@ -14,6 +14,7 @@ using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
+using Microsoft.VisualStudio.Text.Operations;
 using Microsoft.VisualStudio.Text.Projection;
 using Microsoft.VisualStudio.Utilities;
 using VSEmbed.Roslyn;
@@ -23,6 +24,8 @@ namespace DroidMaster.Scripting.Editor {
 	class EditorWorkspaceCreator : WorkspaceCreator {
 		public new EditorWorkspace Workspace => (EditorWorkspace)base.Workspace;
 
+		[Import]
+		public ITextUndoHistoryRegistry UndoRegistry { get; set; }
 		[Import]
 		public IProjectionBufferFactoryService ProjectionFactory { get; set; }
 		[Import]
@@ -99,6 +102,11 @@ namespace DroidMaster.Scripting.Editor {
 					outerBuffer.CurrentSnapshot.CreateTrackingSpan(new Span(wrapper.Item1.Length, fileSnapshot.Length), SpanTrackingMode.EdgeInclusive),
 				}, ProjectionBufferOptions.PermissiveEdgeInclusiveSourceSpans);
 				editorBuffers.Add(path, elisionBuffer);
+
+				// Make sure we always have an undo history for every buffer
+				// so Roslyn can include un-opened reference files in rename
+				// transactions.
+				UndoRegistry.RegisterHistory(elisionBuffer);
 			}
 
 			Workspace.CreateDocument(projectId, elisionBuffer.SourceBuffers[0]);
