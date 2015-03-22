@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Composition;
 using System.IO;
 using System.Linq;
@@ -38,6 +39,25 @@ namespace DroidMaster.Scripting.Editor {
 					.Select(Path.GetFileName)
 					.OrderBy(f => f)
 					.ToList();
+		}
+
+		protected override void OnClosing(CancelEventArgs e) {
+			base.OnClosing(e);
+			var unsavedDocuments = viewModel.Files.Where(f => f.IsDirty);
+			if (!unsavedDocuments.Any())
+				return;
+			switch (MessageBox.Show($"Do you want to save changes to {string.Join(", ", unsavedDocuments.Select(vm => vm.FileName))}?",
+									"DroidMaster", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning)) {
+				case MessageBoxResult.Cancel:
+					e.Cancel = true;
+					return;
+				case MessageBoxResult.Yes:
+					foreach (var vm in unsavedDocuments)
+						vm.Document.Save();
+					break;
+				case MessageBoxResult.No:
+					break;
+			}
 		}
 
 		private void OpenMenu_Click(object sender, RoutedEventArgs e) {
