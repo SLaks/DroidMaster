@@ -119,11 +119,13 @@
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
-    <Reference Include="VSEmbed">
-      <HintPath>..\packages\VSEmbed.1.0.0-beta\lib\net45\VSEmbed.dll</HintPath>
+    <Reference Include="VSEmbed, Version=1.1.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\VSEmbed.1.1.0-beta\lib\net45\VSEmbed.dll</HintPath>
     </Reference>
-    <Reference Include="VSEmbed.Roslyn">
-      <HintPath>..\packages\VSEmbed.1.0.0-beta\lib\net45\VSEmbed.Roslyn.dll</HintPath>
+    <Reference Include="VSEmbed.Roslyn, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\VSEmbed.1.1.0-beta\lib\net45\VSEmbed.Roslyn.dll</HintPath>
     </Reference>
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />

@@ -55,7 +55,7 @@ namespace DroidMaster.Scripting.Editor {
 		protected override MetadataReference CreateAssemblyReference(string assemblyName) {
 			// TODO: Better check for framework vs. non-framework assemblies.
 			if (assemblyName != typeof(WorkspaceCreator).Assembly.GetName().Name)
-				return Workspace.CreateFrameworkReference(assemblyName);
+				return EditorWorkspace.CreateFrameworkReference(assemblyName);
 
 			var location = Assembly.Load(assemblyName).Location;
 			var xmlDocFile = Path.ChangeExtension(location, ".xml");
