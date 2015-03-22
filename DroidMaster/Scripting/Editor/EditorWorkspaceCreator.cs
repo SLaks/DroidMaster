@@ -45,9 +45,9 @@ namespace DroidMaster.Scripting.Editor {
 		///<summary>Maps full paths on disk to open <see cref="ITextDocument"/>s.</summary>
 		public IReadOnlyDictionary<string, ITextDocument> FileDocuments => fileDocuments;
 
-		readonly Dictionary<string, IElisionBuffer> editorBuffers = new Dictionary<string, IElisionBuffer>(StringComparer.OrdinalIgnoreCase);
-		///<summary>Maps full paths on disk to <see cref="IElisionBuffer"/>s to show in the editor.</summary>
-		public IReadOnlyDictionary<string, IElisionBuffer> EditorBuffers => editorBuffers;
+		readonly Dictionary<string, IProjectionBufferBase> editorBuffers = new Dictionary<string, IProjectionBufferBase>(StringComparer.OrdinalIgnoreCase);
+		///<summary>Maps full paths on disk to <see cref="IProjectionBufferBase"/>s to show in the editor.</summary>
+		public IReadOnlyDictionary<string, IProjectionBufferBase> EditorBuffers => editorBuffers;
 
 		protected override MetadataReference CreateAssemblyReference(string assemblyName) {
 			// TODO: Better check for framework vs. non-framework assemblies.
@@ -79,7 +79,7 @@ namespace DroidMaster.Scripting.Editor {
 			path = Path.GetFullPath(path);
 
 			var contentType = ContentTypes.GetContentType(LanguageContentTypes[Workspace.CurrentSolution.GetProject(projectId).Language]);
-			IElisionBuffer elisionBuffer;
+			IProjectionBufferBase elisionBuffer;
 			if (!EditorBuffers.TryGetValue(path, out elisionBuffer)) {
 				var fileDocument = DocumentFactory.CreateAndLoadTextDocument(path, ContentTypes.GetContentType("text"));
 				fileDocuments.Add(path, fileDocument);
@@ -94,13 +94,14 @@ namespace DroidMaster.Scripting.Editor {
 					wrapper.Item2
 				}, ProjectionBufferOptions.None, contentType);
 
-				elisionBuffer = ProjectionFactory.CreateElisionBuffer(null, new NormalizedSnapshotSpanCollection(
-					new SnapshotSpan(outerBuffer.CurrentSnapshot, wrapper.Item1.Length, fileSnapshot.Length)
-				), ElisionBufferOptions.None);
+				// This should be an elision buffer, but Roslyn has problems with elision buffers.  https://github.com/dotnet/roslyn/issues/1471
+				elisionBuffer = ProjectionFactory.CreateProjectionBuffer(null, new[] {
+					outerBuffer.CurrentSnapshot.CreateTrackingSpan(new Span(wrapper.Item1.Length, fileSnapshot.Length), SpanTrackingMode.EdgeInclusive),
+				}, ProjectionBufferOptions.PermissiveEdgeInclusiveSourceSpans);
 				editorBuffers.Add(path, elisionBuffer);
 			}
 
-			Workspace.CreateDocument(projectId, elisionBuffer.SourceBuffer);
+			Workspace.CreateDocument(projectId, elisionBuffer.SourceBuffers[0]);
 		}
 
 		protected override void CloseDocument(DocumentId documentId) {
