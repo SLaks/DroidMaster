@@ -36,6 +36,7 @@ namespace DroidMaster.Scripting.Editor {
 				.EnumerateFiles(viewModel.WorkspaceCreator.ScriptDirectory)
 					.Where(p => WorkspaceCreator.LanguageExtensions.ContainsKey(Path.GetExtension(p)))
 					.Select(Path.GetFileName)
+					.OrderBy(f => f)
 					.ToList();
 		}
 

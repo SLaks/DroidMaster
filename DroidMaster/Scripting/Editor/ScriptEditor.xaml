@@ -6,10 +6,16 @@
         xmlns:local="clr-namespace:DroidMaster.Scripting.Editor"
         mc:Ignorable="d"
 		Name="window"
-        Title="ScriptEditor" Height="300" Width="300">
+        Title="ScriptEditor" Height="600" Width="800">
 	<Window.Resources>
 		<BooleanToVisibilityConverter x:Key="boolToVisibility" />
 	</Window.Resources>
+	<Window.InputBindings>
+		<KeyBinding Modifiers="Ctrl" Key="N" Command="{Binding DataContext.NewFileCommand}" />
+		<KeyBinding Modifiers="Ctrl" Key="S" Command="{Binding SelectedContent.SaveCommand, ElementName=tabs}" />
+		<KeyBinding Modifiers="Ctrl" Key="F4" Command="{Binding SelectedContent.CloseFileCommand}" CommandParameter="{Binding SelectedContent, ElementName=tabs}" />
+		<KeyBinding Modifiers="Ctrl" Key="W" Command="{Binding SelectedContent.CloseFileCommand}" CommandParameter="{Binding SelectedContent, ElementName=tabs}" />
+	</Window.InputBindings>
 	<DockPanel LastChildFill="True">
 		<ToolBar DockPanel.Dock="Top" VerticalAlignment="Top">
 			<Button Command="{Binding DataContext.NewFileCommand, ElementName=window}">
@@ -17,9 +23,6 @@
 					<Image Source="Images/New.png" Height="16" Width="16" />
 					<Label>New Script</Label>
 				</StackPanel>
-				<Button.InputBindings>
-					<KeyBinding Modifiers="Ctrl" Key="N" Command="{Binding DataContext.NewFileCommand, ElementName=window}" />
-				</Button.InputBindings>
 			</Button>
 			<Menu Background="Transparent">
 				<MenuItem Name="openMenu" SubmenuOpened="OpenMenu_SubmenuOpened" Click="OpenMenu_Click">
@@ -29,12 +32,14 @@
 							<Label>Open</Label>
 						</StackPanel>
 					</MenuItem.Header>
-					<MenuItem.InputBindings>
-						<KeyBinding Modifiers="Ctrl" Key="O" />
-					</MenuItem.InputBindings>
+					<MenuItem.ItemTemplate>
+						<DataTemplate>
+							<!-- Disable accelerator keys -->
+							<TextBlock Text="{Binding}" />
+						</DataTemplate>
+					</MenuItem.ItemTemplate>
 					<MenuItem.ItemContainerStyle>
 						<Style TargetType="MenuItem">
-							<Setter Property="Header" Value="{Binding}"/>
 							<Setter Property="CommandParameter" Value="{Binding}"/>
 							<Setter Property="Command" Value="{Binding DataContext.OpenFileCommand, ElementName=window}"/>
 						</Style>
@@ -47,9 +52,6 @@
 					<Image Source="Images/Save.png" Height="16" Width="16" />
 					<Label>Save</Label>
 				</StackPanel>
-				<Button.InputBindings>
-					<KeyBinding Modifiers="Ctrl" Key="S" Command="{Binding SelectedContent.SaveCommand, ElementName=tabs}" />
-				</Button.InputBindings>
 			</Button>
 		</ToolBar>
 		<TabControl Name="tabs" ItemsSource="{Binding Files}" SelectedValue="{Binding SelectedFile}">
@@ -71,7 +73,7 @@
 			</TabControl.ItemTemplate>
 			<TabControl.ContentTemplate>
 				<DataTemplate>
-					<ContentControl Content="{Binding TextView.HostControl}" />
+					<ContentControl IsTabStop="False" Content="{Binding TextView.HostControl}" />
 				</DataTemplate>
 			</TabControl.ContentTemplate>
 		</TabControl>
