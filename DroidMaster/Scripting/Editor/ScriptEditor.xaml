@@ -22,7 +22,7 @@
 				</Button.InputBindings>
 			</Button>
 			<Menu Background="Transparent">
-				<MenuItem Name="openMenu" SubmenuOpened="OpenMenu_SubmenuOpened" MouseDown="OpenMenu_SubmenuOpened">
+				<MenuItem Name="openMenu" SubmenuOpened="OpenMenu_SubmenuOpened" Click="OpenMenu_Click">
 					<MenuItem.Header>
 						<StackPanel Orientation="Horizontal">
 							<Image Source="Images/Open.png" Height="16" Width="16" />

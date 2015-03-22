@@ -22,15 +22,28 @@ namespace DroidMaster.Scripting.Editor {
 			InitializeComponent();
 			DataContext = viewModel = viewModelFactory.CreateExport().Value;
 			viewModel.WorkspaceCreator.ScriptDirectory = Environment.CurrentDirectory;	// TODO: Change?
+			RefreshOpenMenu();
 		}
 
 		private void OpenMenu_SubmenuOpened(object sender, RoutedEventArgs e) {
+			RefreshOpenMenu();
+			viewModel.WorkspaceCreator.RefreshReferenceProjects();
+		}
+
+		void RefreshOpenMenu() {
 			openMenu.ItemsSource = Directory
 				.EnumerateFiles(viewModel.WorkspaceCreator.ScriptDirectory)
-				.Where(p => WorkspaceCreator.LanguageExtensions.ContainsKey(Path.GetExtension(p)))
-				.Select(Path.GetFileName)
-				.ToList();
+					.Where(p => WorkspaceCreator.LanguageExtensions.ContainsKey(Path.GetExtension(p)))
+					.Select(Path.GetFileName)
+					.ToList();
+		}
+
+		private void OpenMenu_Click(object sender, RoutedEventArgs e) {
+			RefreshOpenMenu();
 			viewModel.WorkspaceCreator.RefreshReferenceProjects();
+			if (!openMenu.HasItems) {
+				MessageBox.Show("There are no files in the script directory.\r\nYou can create a script by clicking New Script.");
+			}
 		}
 	}
 }
