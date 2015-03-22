@@ -11,6 +11,7 @@ using System.Windows.Input;
 using Microsoft.CodeAnalysis;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
+using Microsoft.VisualStudio.Utilities;
 using Microsoft.Win32;
 
 namespace DroidMaster.Scripting.Editor {
@@ -21,6 +22,8 @@ namespace DroidMaster.Scripting.Editor {
 
 		[Import]
 		public ITextEditorFactoryService EditorFactory { get; set; }
+		[Import]
+		public IEditorOptionsFactoryService OptionsFactory { get; set; }
 
 		[ImportingConstructor]
 		public ScriptEditorViewModel(ExportFactory<EditorWorkspaceCreator> workspaceFactory) {
@@ -105,7 +108,7 @@ in different languages do not reference each-other.";
 
 			var isReference = Path.GetFileName(dialog.FileName).StartsWith("_");
 			File.WriteAllText(dialog.FileName, (isReference ? ReferenceComment : ScriptComment)
-				.Replace("\r\n", "\r\n" + CommentPrefixes[Scripting.WorkspaceCreator.LanguageExtensions[Path.GetExtension(dialog.FileName)]]) 
+				.Replace("\r\n", "\r\n" + CommentPrefixes[Scripting.WorkspaceCreator.LanguageExtensions[Path.GetExtension(dialog.FileName)]])
 				.Trim()
 			  + "\r\n");
 			OpenFile(dialog.FileName);
@@ -117,7 +120,7 @@ in different languages do not reference each-other.";
 			else
 				WorkspaceCreator.CreateScriptProject(path);
 
-			var fileModel = new ScriptFileViewModel(WorkspaceCreator.FileDocuments[path], WorkspaceCreator.EditorBuffers[path], EditorFactory);
+			var fileModel = new ScriptFileViewModel(WorkspaceCreator.FileDocuments[path], WorkspaceCreator.EditorBuffers[path], EditorFactory, OptionsFactory);
 			Files.Add(fileModel);
 			SelectedFile = fileModel;
 		}
@@ -131,21 +134,34 @@ in different languages do not reference each-other.";
 	}
 
 	class ScriptFileViewModel : NotifyPropertyChanged {
-		public ScriptFileViewModel(ITextDocument doc, ITextBuffer editorBuffer, ITextEditorFactoryService editorFactory) {
+		public ScriptFileViewModel(ITextDocument doc, ITextBuffer editorBuffer, ITextEditorFactoryService editorFactory, IEditorOptionsFactoryService optionsFactory) {
 			Document = doc;
 			doc.DirtyStateChanged += (s, e) => OnPropertyChanged(nameof(IsDirty));
 
 			TextView = editorFactory.CreateTextViewHost(
-				editorFactory.CreateTextView(editorBuffer, editorFactory.CreateTextViewRoleSet(
-					PredefinedTextViewRoles.Analyzable, PredefinedTextViewRoles.Document, PredefinedTextViewRoles.Editable,
-					PredefinedTextViewRoles.Interactive, PredefinedTextViewRoles.PrimaryDocument,
-					PredefinedTextViewRoles.Structured, PredefinedTextViewRoles.Zoomable)
-				), true
+				editorFactory.CreateTextView(new TextDataModel(doc, editorBuffer), editorFactory.AllPredefinedRoles, optionsFactory.GlobalOptions), true
 			);
 			TextView.TextView.Options.SetOptionValue(DefaultTextViewHostOptions.LineNumberMarginId, true);
 			TextView.TextView.Options.SetOptionValue(DefaultTextViewHostOptions.ChangeTrackingId, true);
 			TextView.TextView.Options.SetOptionValue(DefaultTextViewHostOptions.ShowScrollBarAnnotationsOptionId, true);
 			TextView.TextView.Options.SetOptionValue(DefaultTextViewHostOptions.ShowEnhancedScrollBarOptionId, true);
+		}
+
+		// This is necessary to tell TextView-level exports the correct
+		// ContentType of the TextView, while leaving the TextBuffer be
+		// type projection so that classifications are forwarded.
+		class TextDataModel : ITextDataModel {
+			public TextDataModel(ITextDocument document, ITextBuffer editorBuffer) {
+				DataBuffer = editorBuffer;
+				DocumentBuffer = document.TextBuffer;
+			}
+			public IContentType ContentType => DocumentBuffer.ContentType;
+			public ITextBuffer DataBuffer { get; }
+			public ITextBuffer DocumentBuffer { get; }
+			public event EventHandler<TextDataModelContentTypeChangedEventArgs> ContentTypeChanged {
+				add { }
+				remove { }
+			}
 		}
 
 		public ITextDocument Document { get; }
