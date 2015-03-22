@@ -103,6 +103,9 @@ namespace DroidMaster.Scripting.Editor {
 			Workspace.CreateDocument(projectId, elisionBuffer.SourceBuffer);
 		}
 
-		protected override void CloseDocument(DocumentId documentId) => Workspace.CloseDocument(documentId);
+		protected override void CloseDocument(DocumentId documentId) {
+			if (Workspace.IsDocumentOpen(documentId))
+				Workspace.CloseDocument(documentId);
+		}
 	}
 }

@@ -27,20 +27,34 @@ namespace DroidMaster.Scripting {
 			{ ".vb", LanguageNames.VisualBasic },
 		};
 
+		///<summary>Maps Roslyn language names to fixed source files to add to each reference project.</summary>
+		///<remarks>These files prevent compiler errors from using static statements for empty reference projects.</remarks>
+		static readonly IReadOnlyDictionary<string, string> ReferenceFiles = new Dictionary<string, string> {
+			{ LanguageNames.CSharp, "public static partial class ReferenceCS { }" },
+			{ LanguageNames.VisualBasic, "Public Partial Module ReferenceVB\r\nEnd Module" }
+		};
+
 		///<summary>Maps Roslyn language names to the prefix and suffix to wrap reference files in.</summary>
 		static readonly IReadOnlyDictionary<string, Tuple<string, string>> ReferenceWrappers = new Dictionary<string, Tuple<string, string>> {
-			{ LanguageNames.CSharp, Tuple.Create(string.Concat(StandardNamespaces.Select(n => $"using {n};\r\n")), "") },
-			{ LanguageNames.VisualBasic, Tuple.Create(string.Concat(StandardNamespaces.Select(n => $"Imports {n}\r\n")), "") }
+			{ LanguageNames.CSharp, Tuple.Create(string.Concat(StandardNamespaces.Select(n => $"using {n};\r\n"))
+											   + "public static partial class ReferenceCS {{\r\n", 
+												 "\r\n}") },
+			{ LanguageNames.VisualBasic, Tuple.Create(string.Concat(StandardNamespaces.Select(n => $"Imports {n}\r\n"))
+													+ "Public Partial Module ReferenceVB\r\n", 
+													  "\r\nEnd Module") }
 		};
 
 		///<summary>Maps Roslyn language names to the prefix and suffix to wrap scripts in.</summary>
 		static readonly IReadOnlyDictionary<string, Tuple<string, string>> ScriptWrappers = new Dictionary<string, Tuple<string, string>> {
 			{ LanguageNames.CSharp, Tuple.Create(
 				string.Concat(StandardNamespaces.Select(n => $"using {n};\r\n"))
+			  + "\r\nusing static ReferenceCS;\r\n"
+			  + "\r\nusing static ReferenceVB;\r\n"
 			  + "\r\npublic async Task Run(DeviceModel device) {\r\n",
 				"\r\n}") },
 			{ LanguageNames.VisualBasic, Tuple.Create(
 				string.Concat(StandardNamespaces.Select(n => $"Imports {n}\r\n"))
+			  + "\r\nImports ReferenceCS\r\n"	// ReferenceVB is a module, so we don't need to import it
 			  + "\r\nPublic Async Function Run(device As DeviceModel) As Task\r\n",
 				"\r\nEnd Function") }
 		};
@@ -71,10 +85,15 @@ namespace DroidMaster.Scripting {
 				var projectName = "DroidMaster.References." + kvp.Value;
 				var project = Workspace.CurrentSolution
 					.AddProject(projectName, projectName, kvp.Value)
-					.AddMetadataReferences(StandardReferences.Select(CreateAssemblyReference));
+					.AddMetadataReferences(StandardReferences.Select(CreateAssemblyReference))
+					.AddDocument("Reference" + kvp.Key, ReferenceFiles[kvp.Value]).Project;
 
-				// Reference projects cannot have Script documents because they wrap
-				// everything in an internal Script class.
+				// Reference projects cannot use Script documents, because they wrap
+				// everything in an internal Script class.  Instead, I make a normal
+				// document, and wrap all of the source in a public static class.  I
+				// add a using static directive for this class to every script file,
+				// allowing public top-level classes and members to be used directly
+				// (extension methods work without any modifications).
 				Workspace.TryApplyChanges(project.Solution);
 
 				foreach (var path in Directory.EnumerateFiles(ScriptDirectory, "*" + kvp.Key)
