@@ -26,6 +26,14 @@ namespace DroidMaster.Scripting.Editor {
 			WorkspaceCreator = workspaceFactory.CreateExport().Value;
 		}
 
+		///<summary>Refreshes all cached buffers that are not open in any tab. This will apply changes in closed reference script to IntelliSense.</summary>
+		public void RefreshClosedFiles() {
+			var openFiles = Files.Select(f => f.Document);
+			foreach (var otherFile in WorkspaceCreator.FileDocuments.Values.Except(openFiles)) {
+				otherFile.Reload();
+			}
+		}
+
 		public ICommand OpenFileCommand => new ActionCommand<string>(path =>
 			OpenFile(Path.GetFullPath(Path.Combine(WorkspaceCreator.ScriptDirectory, path)))
 		);
@@ -40,6 +48,12 @@ namespace DroidMaster.Scripting.Editor {
 						vm.Document.Save();
 						break;
 					case MessageBoxResult.No:
+						// If the user says not to save, we must actually blow
+						// away the changes. Otherwise, reopening the document
+						// would restore the changes from the cached buffer in
+						// the WorkspaceCreator.  This is especially important
+						// for reference scripts.
+						vm.Document.Reload();
 						break;
 				}
 			}

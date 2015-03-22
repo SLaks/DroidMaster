@@ -27,6 +27,7 @@ namespace DroidMaster.Scripting.Editor {
 
 		private void OpenMenu_SubmenuOpened(object sender, RoutedEventArgs e) {
 			RefreshOpenMenu();
+			viewModel.RefreshClosedFiles();
 			viewModel.WorkspaceCreator.RefreshReferenceProjects();
 		}
 
