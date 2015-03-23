@@ -15,6 +15,9 @@ namespace DroidMaster.Core {
 		///<summary>Gets the user-friendly display name for this connection method.</summary>
 		public abstract string DisplayName { get; }
 
+		///<summary>Returns a user-friendly error message about the configuration, or null if all properties are valid.</summary>
+		public virtual string GetConfigError() => null;
+
 		///<summary>Rescans for connected devices.</summary>
 		public abstract Task Scan();
 

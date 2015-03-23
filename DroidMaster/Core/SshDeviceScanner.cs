@@ -17,10 +17,23 @@ namespace DroidMaster.Core {
 		public override string DisplayName => "Wi-Fi";
 		public IPAddress StartAddress { get; set; }
 		public IPAddress EndAddress { get; set; }
-		public short Port { get; set; }
+		public ushort Port { get; set; }
 
 		public string UserName { get; set; }
 		public string Password { get; set; }
+
+		public override string GetConfigError() {
+			var builder = new StringBuilder();
+			if (StartAddress == null) builder.AppendLine("Please enter a start IP address to scan for devices.");
+			if (EndAddress == null) builder.AppendLine("Please enter an end IP address to scan for devices.");
+			if (StartAddress != null && EndAddress != null
+			 && new BigInteger(StartAddress.GetAddressBytes()) > new BigInteger(EndAddress.GetAddressBytes()))
+				builder.AppendLine("The start IP address must not be after the end IP address.");
+			if (string.IsNullOrWhiteSpace(UserName) || string.IsNullOrWhiteSpace(Password))
+				builder.AppendLine("Please ener a username and password to authenticate to the SSH servers");
+			var result = builder.ToString().Trim();
+			return string.IsNullOrEmpty(result) ? null : result;
+		}
 
 		public override Task Scan() {
 			return Task.WhenAll(GetAddresses().Select(ip => ip.ToString()).Select(TryConnect));

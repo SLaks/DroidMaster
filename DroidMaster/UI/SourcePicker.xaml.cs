@@ -71,6 +71,11 @@ namespace DroidMaster.UI {
 				MessageBox.Show("Please select at least one source.", "DroidMaster", MessageBoxButton.OK, MessageBoxImage.Error);
 				return;
 			}
+			var error = string.Join(Environment.NewLine, sources.Select(s => s.GetConfigError()));
+			if (!string.IsNullOrWhiteSpace(error)) {
+				MessageBox.Show(error, "DroidMaster", MessageBoxButton.OK, MessageBoxImage.Error);
+				return;
+			}
 		}
 	}
 
