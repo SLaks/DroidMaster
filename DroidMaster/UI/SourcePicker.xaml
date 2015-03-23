@@ -8,9 +8,10 @@
         mc:Ignorable="d"
         Title="Select Device Sources – DroidMaster" ResizeMode="CanMinimize" WindowStyle="SingleBorderWindow" SizeToContent="WidthAndHeight">
 	<Window.Resources>
-		<Core:SshDeviceScanner x:Key="sshSource" Port="23" />
+		<Core:SshDeviceScanner x:Key="sshSource" Port="22" />
 		<Core:AdbDeviceScanner x:Key="adbSource" />
 
+		<local:IPAddressConverter x:Key="ipConverter" />
 		<Style TargetType="Button">
 			<Setter Property="Padding" Value="8 2" />
 		</Style>
@@ -38,10 +39,10 @@
 					<RowDefinition />
 				</Grid.RowDefinitions>
 				<Label   Grid.Row="0" Content="Start IP" />
-				<TextBox Grid.Row="0" Grid.Column="1" Text="{Binding StartAddress}" />
+				<TextBox Grid.Row="0" Grid.Column="1" Text="{Binding StartAddress, Converter={StaticResource ipConverter}}" />
 
 				<Label   Grid.Row="1" Content="End IP" />
-				<TextBox Grid.Row="1" Grid.Column="1" Text="{Binding EndAddress}" />
+				<TextBox Grid.Row="1" Grid.Column="1" Text="{Binding EndAddress, Converter={StaticResource ipConverter}}" />
 
 				<Label   Grid.Row="2" Content="Port" />
 				<TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Port}" />
