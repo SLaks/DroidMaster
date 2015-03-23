@@ -80,13 +80,26 @@ namespace DroidMaster.Core {
 				}
 			}
 
-			// TODO: SFTP / SCP
 			public Task PushFileAsync(string localPath, string devicePath, CancellationToken token = default(CancellationToken), IProgress<double> progress = null) {
-				throw new NotImplementedException();
+				return Task.Run(() => {
+					using (var client = new ScpClient(Client.ConnectionInfo)) {
+						client.Connect();
+						token.ThrowIfCancellationRequested();
+						client.Uploading += (s, e) => progress.Report(e.Uploaded / (double)e.Size);
+						client.Upload(new FileInfo(localPath), devicePath);
+					}
+				}, token);
 			}
 
 			public Task PullFileAsync(string devicePath, string localPath, CancellationToken token = default(CancellationToken), IProgress<double> progress = null) {
-				throw new NotImplementedException();
+				return Task.Run(() => {
+					using (var client = new ScpClient(Client.ConnectionInfo)) {
+						client.Connect();
+						token.ThrowIfCancellationRequested();
+						client.Downloading += (s, e) => progress.Report(e.Downloaded / (double)e.Size);
+						client.Download(devicePath, new FileInfo(localPath));
+					}
+				}, token);
 			}
 
 			public ICommandResult ExecuteShellCommand(string command) {
