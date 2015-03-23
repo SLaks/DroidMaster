@@ -37,7 +37,7 @@ namespace DroidMaster.Scripting {
 		///<summary>Maps Roslyn language names to the prefix and suffix to wrap reference files in.</summary>
 		static readonly IReadOnlyDictionary<string, Tuple<string, string>> ReferenceWrappers = new Dictionary<string, Tuple<string, string>> {
 			{ LanguageNames.CSharp, Tuple.Create(string.Concat(StandardNamespaces.Select(n => $"using {n};\r\n"))
-											   + "public static partial class ReferenceCS {{\r\n", 
+											   + "public static partial class ReferenceCS {\r\n", 
 												 "\r\n}") },
 			{ LanguageNames.VisualBasic, Tuple.Create(string.Concat(StandardNamespaces.Select(n => $"Imports {n}\r\n"))
 													+ "Public Partial Module ReferenceVB\r\n", 
