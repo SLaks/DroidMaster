@@ -13,8 +13,11 @@ namespace DroidMaster.Models {
 	///<summary>A wrapper around <see cref="PersistentDevice"/>.</summary>
 	///<remarks>The public members of this class form the API  for device scripts.</remarks>
 	public partial class DeviceModel : NotifyPropertyChanged {
+		readonly ObservableCollection<object> writableLog = new ObservableCollection<object>();
+
 		internal DeviceModel(PersistentDevice device) {
 			Device = device;
+			LogItems = new ReadOnlyObservableCollection<object>(writableLog);
 		}
 
 		internal PersistentDevice Device { get; }
@@ -27,13 +30,16 @@ namespace DroidMaster.Models {
 		}
 
 		///<summary>Gets a collection of WPF-bindable objects containing output from script commands.</summary>
-		public ObservableCollection<object> Log { get; } = new ObservableCollection<object>();
+		public ReadOnlyObservableCollection<object> LogItems { get; }
+
+		///<summary>Logs something of interest from this device.</summary>
+		public void Log(object item) => writableLog.Insert(0, item);
 
 		#region Device Method Wrappers
 		///<summary>Executes a shell command on the device, returning the full output.</summary>
 		public Task<string> ExecuteShellCommand(string command) {
 			var result = Device.ExecuteShellCommand(command);
-			Log.Add(result);
+			Log(result);
 			return result.Complete;
 		}
 
@@ -41,7 +47,7 @@ namespace DroidMaster.Models {
 		public Task PushFile(string localPath, string devicePath) {
 			var model = new ProgressModel("Pushing " + Path.GetFileName(localPath));
 			Status = model;
-			Log.Add(model);
+			Log(model);
 			return Device.PushFileAsync(localPath, devicePath, progress: model);
 		}
 
@@ -49,14 +55,14 @@ namespace DroidMaster.Models {
 		public Task PullFile(string devicePath, string localPath) {
 			var model = new ProgressModel("Pulling " + Path.GetFileName(localPath));
 			Status = model;
-			Log.Add(model);
+			Log(model);
 			return Device.PushFileAsync(devicePath, localPath, progress: model);
 		}
 
 		///<summary>Reboots the device.</summary>
 		public Task Reboot() {
 			Status = "Rebooting...";
-			Log.Add("Rebooting device");
+			Log("Rebooting device");
 			return Device.RebootAsync();
 		}
 		#endregion
@@ -85,7 +91,7 @@ namespace DroidMaster.Models {
 			var tempPath = TempPath + Guid.NewGuid();
 			await PushFile(apkPath, tempPath);
 			await ExecuteShellCommand($"pm install {tempPath} && rm {tempPath}");
-        }
+		}
 		#endregion
 	}
 
