@@ -20,9 +20,6 @@ namespace DroidMaster.UI {
 			RunRefreshLoop();
 		}
 
-		[Obsolete("This constructor should only be called by the designer.", error: true)]
-		public DeviceListViewModel() : this(new Core.DeviceScanner[0], default(CancellationToken)) { }
-
 		private readonly Core.PersistentDeviceManager deviceManager;
 
 		public ObservableCollection<DeviceModel> Devices { get; } = new ObservableCollection<DeviceModel>();
