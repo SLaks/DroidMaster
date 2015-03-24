@@ -136,6 +136,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Extensions.cs" />
     <Compile Include="Models\DeviceModel_Status.cs" />
     <Compile Include="Scripting\Editor\EditorWorkspaceCreator.cs" />
     <Compile Include="Scripting\Editor\ScriptEditor.xaml.cs">
@@ -144,6 +145,10 @@
     <Compile Include="Scripting\Editor\ScriptEditorViewModel.cs" />
     <Compile Include="Scripting\RuntimeWorkspaceCreator.cs" />
     <Compile Include="Scripting\WorkspaceCreator.cs" />
+    <Compile Include="UI\DeviceList.xaml.cs">
+      <DependentUpon>DeviceList.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UI\DeviceListViewModel.cs" />
     <Compile Include="UI\SourcePicker.xaml.cs">
       <DependentUpon>SourcePicker.xaml</DependentUpon>
     </Compile>
@@ -158,6 +163,10 @@
     <Compile Include="Core\SshDeviceScanner.cs" />
     <Compile Include="DataEventArgs.cs" />
     <Page Include="Scripting\Editor\ScriptEditor.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UI\DeviceList.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

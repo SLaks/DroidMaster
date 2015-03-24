@@ -13,8 +13,8 @@ namespace DroidMaster.Core {
 
 		readonly ConcurrentDictionary<string, PersistentDevice> knownDevices = new ConcurrentDictionary<string, PersistentDevice>();
 
-		public PersistentDeviceManager() {
-			Scanners = new ReadOnlyCollection<DeviceScanner>(scanners);
+		public PersistentDeviceManager(IEnumerable<DeviceScanner> scanners) {
+			Scanners = new ReadOnlyCollection<DeviceScanner>(this.scanners = scanners.ToList());
 		}
 		public ReadOnlyCollection<DeviceScanner> Scanners { get; }
 
@@ -22,6 +22,11 @@ namespace DroidMaster.Core {
 			scanners.Add(scanner);
 			scanner.DeviceDiscovered += Scanner_DeviceDiscovered;
 			scanner.DiscoveryError += (s, e) => OnDiscoveryError(e);
+		}
+
+		///<summary>Rescans all sources for new devices.</summary>
+		public Task Refresh() {
+			return Task.WhenAll(Scanners.Select(s => s.Scan()));
 		}
 
 		private async void Scanner_DeviceDiscovered(object sender, DataEventArgs<IDeviceConnection> e) {

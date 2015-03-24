@@ -1,0 +1,66 @@
+﻿<Window x:Class="DroidMaster.UI.DeviceList" x:ClassModifier="internal"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DroidMaster.UI"
+        xmlns:models="clr-namespace:DroidMaster.Models"
+        xmlns:core="clr-namespace:DroidMaster.Core"
+        mc:Ignorable="d"
+        Title="DeviceList" Height="300" Width="600">
+	<Window.Resources>
+		<local:DeviceListViewModel x:Key="designModel" />
+		<local:InterfaceTemplateSelector x:Key="interfaceSelector" />
+	</Window.Resources>
+	<Grid d:DataContext="{StaticResource designModel}">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="3*" />
+			<RowDefinition />
+		</Grid.RowDefinitions>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition />
+			<ColumnDefinition />
+		</Grid.ColumnDefinitions>
+		<ToolBar Grid.ColumnSpan="2">
+			<Button>Refresh</Button>
+		</ToolBar>
+		<DataGrid Grid.Row="1" ItemsSource="{Binding Devices}" Name="devices"></DataGrid>
+		<ItemsControl Grid.Row="2" ItemsSource="{Binding DiscoveryErrors}" />
+		<TabControl Grid.Row="1" Grid.Column="1" Grid.RowSpan="2"
+					ItemsSource="{Binding SelectedItems, ElementName=devices}">
+			<TabControl.ItemTemplate>
+				<DataTemplate>
+					<Label Content="{Binding Devices.LatestConnectionId}" />
+				</DataTemplate>
+			</TabControl.ItemTemplate>
+			<TabControl.ContentTemplate>
+				<DataTemplate>
+					<DataTemplate.Resources>
+						<DataTemplate DataType="models:ProgressModel">
+							<DockPanel LastChildFill="True">
+								<Label DockPanel.Dock="Left" Content="{Binding Description}" />
+								<ProgressBar Maximum="1" Value="{Binding Progress}" />
+							</DockPanel>
+						</DataTemplate>
+						<DataTemplate DataType="core:ICommandResult">
+							<StackPanel>
+								<Label FontWeight="Bold" Content="{Binding CommandText}" />
+								<Label Content="{Binding Output}" />
+							</StackPanel>
+						</DataTemplate>
+					</DataTemplate.Resources>
+					<ItemsControl ItemsSource="{Binding LogItems}">
+						<ItemsControl.ItemTemplate>
+							<DataTemplate>
+								<Border BorderThickness="0 0 0 1" BorderBrush="DarkGray" Padding="0 0 0 2" Margin="0 0 0 2">
+									<ContentPresenter Content="{Binding}" ContentTemplateSelector="{StaticResource interfaceSelector}" />
+								</Border>
+							</DataTemplate>
+						</ItemsControl.ItemTemplate>
+					</ItemsControl>
+				</DataTemplate>
+			</TabControl.ContentTemplate>
+		</TabControl>
+	</Grid>
+</Window>

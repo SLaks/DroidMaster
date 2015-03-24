@@ -76,6 +76,8 @@ namespace DroidMaster.UI {
 				MessageBox.Show(error, "DroidMaster", MessageBoxButton.OK, MessageBoxImage.Error);
 				return;
 			}
+
+			new DeviceList(sources).Show();
 		}
 	}
 
