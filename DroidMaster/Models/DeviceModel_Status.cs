@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -18,7 +19,11 @@ namespace DroidMaster.Models {
 			BatteryLevel = int.Parse(batteryRegex.Match(output).Groups[1].Value);
 			PowerSources = string.Join(", ", powerSourceRegex.Matches(output).Cast<Match>().Select(m => m.Groups[1]));
 
-			IsRooted = (await Device.ExecuteShellCommand("su -c echo BLAH").Complete).Contains("BLAH");
+			try {
+				IsRooted = (await Device.ExecuteShellCommand("su -c echo BLAH").Complete).Contains("BLAH");
+			} catch (FileNotFoundException) {
+				IsRooted = false;
+			}
 
 			AndroidVersion = await Device.ExecuteShellCommand("getprop ro.build.version.release").Complete;
 			Model = Capitalize(await Device.ExecuteShellCommand("getprop ro.product.brand").Complete)
@@ -26,7 +31,7 @@ namespace DroidMaster.Models {
 			IsWiFiEnabled = await Device.ExecuteShellCommand("getprop wlan.driver.status").Complete == "ok";
 		}
 
-		static string Capitalize(string text) { return string.IsNullOrEmpty(text) ? "" : char.ToUpper(text[0]) + text.Substring(0); }
+		static string Capitalize(string text) { return string.IsNullOrEmpty(text) ? "" : char.ToUpper(text[0]) + text.Substring(1); }
 
 		bool isScreenOn;
 		///<summary>Indicates whether the device screen is on.</summary>
@@ -49,7 +54,7 @@ namespace DroidMaster.Models {
 			private set { powerSources = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsPowered)); }
 		}
 		///<summary>Indicates whether the device has any active power source.</summary>
-		public bool IsPowered => string.IsNullOrEmpty(PowerSources);
+		public bool IsPowered => !string.IsNullOrEmpty(PowerSources);
 
 		bool isRooted;
 		///<summary>Indicates whether the device is rooted.</summary>
@@ -78,6 +83,5 @@ namespace DroidMaster.Models {
 			get { return model; }
 			private set { model = value; OnPropertyChanged(); }
 		}
-
 	}
 }
