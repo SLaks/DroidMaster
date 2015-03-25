@@ -22,7 +22,7 @@ namespace DroidMaster.UI {
 
 		private readonly Core.PersistentDeviceManager deviceManager;
 
-		public ObservableCollection<DeviceModel> Devices { get; } = new ObservableCollection<DeviceModel>();
+		public ObservableCollection<DeviceViewModel> Devices { get; } = new ObservableCollection<DeviceViewModel>();
 		public ObservableCollection<string> DiscoveryErrors { get; } = new ObservableCollection<string>();
 
 		public CancellationToken Stop { get; }
@@ -41,7 +41,7 @@ namespace DroidMaster.UI {
 		}
 
 		async void OnDeviceAdded(Core.PersistentDevice device) {
-			var model = new DeviceModel(device);
+			var model = new DeviceViewModel(device);
 			Devices.Add(model);
 
 			while (!Stop.IsCancellationRequested) {
@@ -64,5 +64,10 @@ namespace DroidMaster.UI {
 					device.Device.Dispose();
 			}
 		}
+	}
+	class DeviceViewModel : DeviceModel {
+		public DeviceViewModel(Core.PersistentDevice device) : base(device) { }
+		// Must be public for data-binding
+		public new Core.PersistentDevice Device => base.Device;
 	}
 }

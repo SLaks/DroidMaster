@@ -9,8 +9,13 @@
         mc:Ignorable="d"
         Title="DeviceList" Height="300" Width="600">
 	<Window.Resources>
-		<local:DeviceListViewModel x:Key="designModel" />
-		<local:InterfaceTemplateSelector x:Key="interfaceSelector" />
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="Icons.xaml" />
+			</ResourceDictionary.MergedDictionaries>
+			<local:DeviceListViewModel x:Key="designModel" />
+			<local:InterfaceTemplateSelector x:Key="interfaceSelector" />
+		</ResourceDictionary>
 	</Window.Resources>
 	<Grid d:DataContext="{StaticResource designModel}">
 		<Grid.RowDefinitions>
@@ -19,13 +24,50 @@
 			<RowDefinition />
 		</Grid.RowDefinitions>
 		<Grid.ColumnDefinitions>
-			<ColumnDefinition />
+			<ColumnDefinition Width="1.5*" />
 			<ColumnDefinition />
 		</Grid.ColumnDefinitions>
 		<ToolBar Grid.ColumnSpan="2">
 			<Button>Refresh</Button>
 		</ToolBar>
-		<DataGrid Grid.Row="1" ItemsSource="{Binding Devices}" Name="devices"></DataGrid>
+		<DataGrid Grid.Row="1" ItemsSource="{Binding Devices}" Name="devices">
+			<DataGrid.Columns>
+				<DataGridTemplateColumn SortMemberPath="{Binding}" Header="Device">
+					<DataGridTemplateColumn.CellTemplate>
+						<DataTemplate>
+							<StackPanel Orientation="Horizontal">
+								<Grid Width="28" Height="24" ToolTip="{Binding Device.CurrentConnectionMethod}">
+									<Viewbox Height="{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=Grid}}" HorizontalAlignment="Left">
+										<Control Template="{StaticResource AndroidIcon}" Name="deviceIcon"
+											 TextBlock.Foreground="#A4C639" />
+									</Viewbox>
+
+									<Viewbox Width="13" HorizontalAlignment="Right" Margin="0,-18,-1,0" Name="usbIcon" Visibility="Collapsed">
+										<ContentControl Content="{StaticResource UsbIcon}" />
+									</Viewbox>
+
+									<Viewbox Width="12" HorizontalAlignment="Right" Margin="0,-15,1,0" Name="wifiIcon" Visibility="Collapsed">
+										<Image Source="{StaticResource WiFiIcon}" />
+									</Viewbox>
+								</Grid>
+								<Label Content="{Binding Device.LatestConnectionId}" VerticalAlignment="Center" />
+							</StackPanel>
+							<DataTemplate.Triggers>
+								<DataTrigger Binding="{Binding Device.CurrentConnectionMethod}" Value="Offline">
+									<Setter TargetName="deviceIcon" Property="TextBlock.Foreground" Value="Gray" />
+								</DataTrigger>
+								<DataTrigger Binding="{Binding Device.CurrentConnectionMethod}" Value="USB">
+									<Setter TargetName="usbIcon" Property="Visibility" Value="Visible" />
+								</DataTrigger>
+								<DataTrigger Binding="{Binding Device.CurrentConnectionMethod}" Value="Wi-Fi">
+									<Setter TargetName="wifiIcon" Property="Visibility" Value="Visible" />
+								</DataTrigger>
+							</DataTemplate.Triggers>
+						</DataTemplate>
+					</DataGridTemplateColumn.CellTemplate>
+				</DataGridTemplateColumn>
+			</DataGrid.Columns>
+		</DataGrid>
 		<ItemsControl Grid.Row="2" ItemsSource="{Binding DiscoveryErrors}" />
 		<TabControl Grid.Row="1" Grid.Column="1" Grid.RowSpan="2"
 					ItemsSource="{Binding SelectedItems, ElementName=devices}">
