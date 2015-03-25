@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,7 +15,9 @@ namespace DroidMaster.Core {
 		readonly ConcurrentDictionary<string, PersistentDevice> knownDevices = new ConcurrentDictionary<string, PersistentDevice>();
 
 		public PersistentDeviceManager(IEnumerable<DeviceScanner> scanners) {
-			Scanners = new ReadOnlyCollection<DeviceScanner>(this.scanners = scanners.ToList());
+			Scanners = new ReadOnlyCollection<DeviceScanner>(this.scanners);
+			foreach (var scanner in scanners)
+				AddScanner(scanner);
 		}
 		public ReadOnlyCollection<DeviceScanner> Scanners { get; }
 
@@ -45,6 +48,7 @@ namespace DroidMaster.Core {
 						OnDiscoveryError(new DataEventArgs<string>($"A connection error occurred on ee.DisposedConnection.ConnectionId:\r\n{ee.Error.Message}"));
 						ee.DisposedConnection.Owner.ScanFor(ee.DisposedConnection.ConnectionId);
 					};
+					OnDeviceDiscovered(new DataEventArgs<PersistentDevice>(newDevice));
 				}
 			} catch (Exception ex) {
 				OnDiscoveryError(new DataEventArgs<string>($"An error occurred while identifying {e.Data.ConnectionId}:\r\n${ex.Message}"));
@@ -55,9 +59,12 @@ namespace DroidMaster.Core {
 		const string DeviceIdPath = "/mnt/sdcard/droidmaster-id";
 		///<summary>Finds or creates a persistent unique identifier for a device.</summary>
 		private static async Task<string> GetPersistentId(IDeviceConnection device) {
-			var existingId = await device.ExecuteShellCommand("cat " + DeviceIdPath).Complete.ConfigureAwait(false);
-			if (string.IsNullOrWhiteSpace(existingId))
-				return existingId;
+			try {
+				var existingId = await device.ExecuteShellCommand("cat " + DeviceIdPath).Complete.ConfigureAwait(false);
+				if (!string.IsNullOrWhiteSpace(existingId))
+					return existingId;
+			} catch (FileNotFoundException) { }	// If the command fails (because the file does not exist), proceed
+
 			var newId = $"SLaks/DroidMaster: First found at {DateTime.Now} as {device.ConnectionId}. {Guid.NewGuid()}";
 			await device.ExecuteShellCommand($"echo > {DeviceIdPath} {newId}").Complete.ConfigureAwait(false);
 			return newId;

@@ -45,7 +45,7 @@ namespace DroidMaster.Core {
 		sealed class AdbDeviceConnection : IDeviceConnection {
 			Device Device { get; }
 			public DeviceScanner Owner { get; }
-			public string ConnectionId => Device.DeviceProperty;
+			public string ConnectionId => Device.SerialNumber;
 			public AdbDeviceConnection(DeviceScanner owner, Device device) {
 				Device = device;
 				Owner = owner;
