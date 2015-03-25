@@ -19,8 +19,8 @@ namespace DroidMaster.UI {
 			Devices.Add(new DeviceViewModel(new PersistentDevice("E", new DesignerDevice(new SshDeviceScanner(), "192.168.1.225"))));
 
 			SetDesignerProperty(0, nameof(DeviceModel.BatteryLevel), 78);
-			SetDesignerProperty(1, nameof(DeviceModel.BatteryLevel), 32);
-			SetDesignerProperty(2, nameof(DeviceModel.BatteryLevel), 12);
+			SetDesignerProperty(1, nameof(DeviceModel.BatteryLevel), 27);
+			SetDesignerProperty(2, nameof(DeviceModel.BatteryLevel), 10);
 			SetDesignerProperty(3, nameof(DeviceModel.BatteryLevel), 90);
 
 			SetDesignerProperty(0, nameof(DeviceModel.PowerSources), "AC");

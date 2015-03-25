@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Media;
 using DroidMaster.Models;
 
 namespace DroidMaster.UI {
@@ -69,5 +70,12 @@ namespace DroidMaster.UI {
 		public DeviceViewModel(Core.PersistentDevice device) : base(device) { }
 		// Must be public for data-binding
 		public new Core.PersistentDevice Device => base.Device;
+
+		public override int BatteryLevel {
+			get { return base.BatteryLevel; }
+			protected set { base.BatteryLevel = value; OnPropertyChanged(nameof(BatteryColor)); }
+		}
+		public Brush BatteryColor => new SolidColorBrush(	// http://www.google.com/design/spec/style/color.html#color-color-palette
+			BatteryLevel <= 10 ? Color.FromRgb(229, 57, 53) : BatteryLevel < 30 ? Color.FromRgb(255, 235, 59) : Color.FromRgb(76, 175, 80));
 	}
 }

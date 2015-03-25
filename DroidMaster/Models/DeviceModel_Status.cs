@@ -42,9 +42,9 @@ namespace DroidMaster.Models {
 
 		int batteryLevel;
 		///<summary>Gets the battery level, between 0 and 100.</summary>
-		public int BatteryLevel {
+		public virtual int BatteryLevel {
 			get { return batteryLevel; }
-			private set { batteryLevel = value; OnPropertyChanged(); }
+			protected set { batteryLevel = value; OnPropertyChanged(); }
 		}
 
 		string powerSources;

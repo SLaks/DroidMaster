@@ -79,7 +79,7 @@
 								</Grid.RowDefinitions>
 								<Border Width="6" Background="Black" HorizontalAlignment="Center" SnapsToDevicePixels="True" />
 								<Border Width="12" Grid.Row="1" BorderBrush="Black" BorderThickness="2" SnapsToDevicePixels="True">
-									<ProgressBar Value="{Binding BatteryLevel, Mode=OneWay}" Orientation="Vertical" SnapsToDevicePixels="True" Margin="0,0,-1,-1" Name="bar">
+									<ProgressBar Value="{Binding BatteryLevel, Mode=OneWay}" Orientation="Vertical" SnapsToDevicePixels="True" Margin="0,0,-1,-1" Name="bar" Foreground="{Binding BatteryColor}">
 										<ProgressBar.Template>
 											<ControlTemplate TargetType="{x:Type ProgressBar}">
 												<Grid x:Name="TemplateRoot">
