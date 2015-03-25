@@ -31,13 +31,12 @@ namespace DroidMaster.UI {
 		// Therefore, they must handle all possible exceptions.
 		async void RunRefreshLoop() {
 			while (!Stop.IsCancellationRequested) {
-				await Task.Delay(TimeSpan.FromSeconds(5), Stop);
-				Stop.ThrowIfCancellationRequested();
 				try {
 					await deviceManager.Refresh();
 				} catch (Exception ex) {
 					DiscoveryErrors.Insert(0, $"An error occurred while scanning for devices:\r\n{ex.Message}");
 				}
+				await Task.Delay(TimeSpan.FromSeconds(5), Stop);
 			}
 		}
 
@@ -46,13 +45,12 @@ namespace DroidMaster.UI {
 			Devices.Add(model);
 
 			while (!Stop.IsCancellationRequested) {
-				await Task.Delay(TimeSpan.FromSeconds(5), Stop);
-				Stop.ThrowIfCancellationRequested();
 				try {
 					await model.Refresh();
 				} catch (Exception ex) {
 					model.Log($"An error occurred while refreshing device status:\r\n{ex.Message}");
 				}
+				await Task.Delay(TimeSpan.FromSeconds(5), Stop);
 			}
 		}
 
