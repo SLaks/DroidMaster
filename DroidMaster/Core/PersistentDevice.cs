@@ -67,7 +67,7 @@ namespace DroidMaster.Core {
 				result.Inner = c.ExecuteShellCommand(command);
 				result.Inner.PropertyChanged += onPropertyChanged;
 				return result.Inner.Complete;
-			}).ContinueWith(_ => result.Output);
+			});
 			return result;
 		}
 
@@ -94,8 +94,9 @@ namespace DroidMaster.Core {
 			return Execute(d => d.RebootAsync());
 		}
 
+		Task Execute(Func<IDeviceConnection, Task> operation) => Execute(async c => { await operation(c); return true; });
 		///<summary>Keeps running an operation against the current connection until no errors occur.</summary>
-		async Task Execute(Func<IDeviceConnection, Task> operation) {
+		async Task<T> Execute<T>(Func<IDeviceConnection, Task<T>> operation) {
 			while (true) {
 				var currentSource = volatileDeviceSource;
 				var connection = await currentSource.Task.ConfigureAwait(false);
@@ -106,12 +107,11 @@ namespace DroidMaster.Core {
 					if (currentSource != volatileDeviceSource)
 						continue;
 					try {
-						await operation(connection).ConfigureAwait(false);
-						return;
+						return await operation(connection).ConfigureAwait(false);
 						// If a connection-level error occurs, clear the device, then wait for the next connection.
 					} catch (SocketException ex) {
 						HandleConnectionError(currentSource, ex);
-					} catch (IOException ex) {
+					} catch (IOException ex) when (!(ex is FileNotFoundException)) {
 						HandleConnectionError(currentSource, ex);
 					} catch (ShellCommandUnresponsiveException ex) {
 						HandleConnectionError(currentSource, ex);
