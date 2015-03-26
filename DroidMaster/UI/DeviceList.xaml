@@ -75,14 +75,14 @@
 					</DataGridTemplateColumn.Header>
 					<DataGridTemplateColumn.CellTemplate>
 						<DataTemplate>
-							<Grid Margin="1" SnapsToDevicePixels="True" ToolTip="{Binding PowerSources}">
+							<Grid SnapsToDevicePixels="True" ToolTip="{Binding PowerSources}" Width="24">
 								<Grid.RowDefinitions>
 									<RowDefinition Height="2" />
 									<RowDefinition />
 								</Grid.RowDefinitions>
-								<Border Width="6" Background="Black" HorizontalAlignment="Center" SnapsToDevicePixels="True" />
-								<Border Width="12" Grid.Row="1" BorderBrush="Black" BorderThickness="2" SnapsToDevicePixels="True" HorizontalAlignment="Center">
-									<ProgressBar Value="{Binding BatteryLevel, Mode=OneWay}" Orientation="Vertical" SnapsToDevicePixels="True" Margin="0,0,-1,-1" Name="bar" Foreground="{Binding BatteryColor}">
+								<Border Width="6" Background="Black"  />
+								<Border Width="12" Grid.Row="1" BorderBrush="Black" BorderThickness="2">
+									<ProgressBar Value="{Binding BatteryLevel, Mode=OneWay}" Orientation="Vertical" SnapsToDevicePixels="True" Name="bar" Foreground="{Binding BatteryColor}">
 										<ProgressBar.Template>
 											<ControlTemplate TargetType="{x:Type ProgressBar}">
 												<Grid x:Name="TemplateRoot">
