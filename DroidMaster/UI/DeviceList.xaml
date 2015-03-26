@@ -31,7 +31,23 @@
 		<ToolBar Grid.ColumnSpan="2">
 			<Button>Refresh</Button>
 		</ToolBar>
-		<DataGrid Grid.Row="1" ItemsSource="{Binding Devices}" Name="devices">
+		<DataGrid Grid.Row="1" ItemsSource="{Binding Devices}" Name="devices" HeadersVisibility="Column" HorizontalGridLinesBrush="#DDD" GridLinesVisibility="Horizontal" IsReadOnly="True">
+			<DataGrid.CellStyle>
+				<Style TargetType="DataGridCell">
+					<Setter Property="Template">
+						<Setter.Value>
+							<ControlTemplate TargetType="{x:Type DataGridCell}">
+								<Border Background="{TemplateBinding Background}">
+									<ContentPresenter VerticalAlignment="Center" />
+								</Border>
+							</ControlTemplate>
+						</Setter.Value>
+					</Setter>
+					<Setter Property="BorderThickness" Value="0" />
+					<Setter Property="VerticalContentAlignment" Value="Center" />
+				</Style>
+			</DataGrid.CellStyle>
+
 			<DataGrid.Columns>
 				<DataGridTemplateColumn SortMemberPath="Device.LatestConnectionId" Header="Device">
 					<DataGridTemplateColumn.CellTemplate>
@@ -72,7 +88,7 @@
 					</DataGridTemplateColumn.HeaderStyle>
 					<DataGridTemplateColumn.CellTemplate>
 						<DataTemplate>
-							<Grid SnapsToDevicePixels="True" ToolTip="{Binding PowerSources}" Width="24">
+							<Grid SnapsToDevicePixels="True" ToolTip="{Binding PowerSources}" Width="24" Height="22">
 								<Grid.RowDefinitions>
 									<RowDefinition Height="2" />
 									<RowDefinition />
@@ -105,10 +121,11 @@
 		</DataGrid>
 		<ItemsControl Grid.Row="2" ItemsSource="{Binding DiscoveryErrors}" />
 		<TabControl Grid.Row="1" Grid.Column="1" Grid.RowSpan="2"
-					ItemsSource="{Binding SelectedItems, ElementName=devices}">
+					ItemsSource="{Binding SelectedItems, ElementName=devices}"
+					SelectedValue="{Binding SelectedValue, ElementName=devices, Mode=OneWay}">
 			<TabControl.ItemTemplate>
 				<DataTemplate>
-					<Label Content="{Binding Devices.LatestConnectionId}" />
+					<Label Content="{Binding Device.LatestConnectionId}" />
 				</DataTemplate>
 			</TabControl.ItemTemplate>
 			<TabControl.ContentTemplate>
