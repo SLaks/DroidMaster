@@ -33,7 +33,7 @@
 		</ToolBar>
 		<DataGrid Grid.Row="1" ItemsSource="{Binding Devices}" Name="devices">
 			<DataGrid.Columns>
-				<DataGridTemplateColumn SortMemberPath="{Binding}" Header="Device">
+				<DataGridTemplateColumn SortMemberPath="Device.LatestConnectionId" Header="Device">
 					<DataGridTemplateColumn.CellTemplate>
 						<DataTemplate>
 							<StackPanel Orientation="Horizontal">
@@ -61,7 +61,7 @@
 						</DataTemplate>
 					</DataGridTemplateColumn.CellTemplate>
 				</DataGridTemplateColumn>
-				<DataGridTemplateColumn SortMemberPath="{Binding IsPowered}" CanUserResize="False">
+				<DataGridTemplateColumn SortMemberPath="IsPowered" CanUserResize="False">
 					<DataGridTemplateColumn.Header>
 						<Image ToolTip="Charging?" Width="8" Source="{StaticResource ChargingIcon}" />
 					</DataGridTemplateColumn.Header>
