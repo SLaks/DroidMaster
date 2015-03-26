@@ -39,17 +39,11 @@
 							<StackPanel Orientation="Horizontal">
 								<Grid Width="28" Height="24" ToolTip="{Binding Device.CurrentConnectionMethod}">
 									<Viewbox Height="{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=Grid}}" HorizontalAlignment="Left">
-										<Control Template="{StaticResource AndroidIcon}" Name="deviceIcon"
-											 TextBlock.Foreground="#A4C639" />
+										<Control Template="{StaticResource AndroidIcon}" Name="deviceIcon" TextBlock.Foreground="#A4C639" />
 									</Viewbox>
 
-									<Viewbox Width="13" HorizontalAlignment="Right" Margin="0,-18,-1,0" Name="usbIcon" Visibility="Collapsed">
-										<ContentControl Content="{StaticResource UsbIcon}" />
-									</Viewbox>
-
-									<Viewbox Width="12" HorizontalAlignment="Right" Margin="0,-15,1,0" Name="wifiIcon" Visibility="Collapsed">
-										<Image Source="{StaticResource WiFiIcon}" />
-									</Viewbox>
+									<Image Width="13" HorizontalAlignment="Right" Margin="0,-18,-1,0" Name="usbIcon" Visibility="Collapsed" Source="{StaticResource UsbIcon}" />
+									<Image Width="12" HorizontalAlignment="Right" Margin="0,-15,1,0" Name="wifiIcon" Visibility="Collapsed" Source="{StaticResource WiFiIcon}" />
 								</Grid>
 								<Label Content="{Binding Device.LatestConnectionId}" VerticalAlignment="Center" />
 							</StackPanel>
@@ -69,10 +63,13 @@
 				</DataGridTemplateColumn>
 				<DataGridTemplateColumn SortMemberPath="{Binding IsPowered}" CanUserResize="False">
 					<DataGridTemplateColumn.Header>
-						<Label ToolTip="Charging?">
-							<Viewbox Width="10" Child="{StaticResource ChargingIcon}" />
-						</Label>
+						<Image ToolTip="Charging?" Width="8" Source="{StaticResource ChargingIcon}" />
 					</DataGridTemplateColumn.Header>
+					<DataGridTemplateColumn.HeaderStyle>
+						<Style TargetType="DataGridColumnHeader">
+							<Setter Property="HorizontalContentAlignment" Value="Center" />
+						</Style>
+					</DataGridTemplateColumn.HeaderStyle>
 					<DataGridTemplateColumn.CellTemplate>
 						<DataTemplate>
 							<Grid SnapsToDevicePixels="True" ToolTip="{Binding PowerSources}" Width="24">
@@ -80,9 +77,9 @@
 									<RowDefinition Height="2" />
 									<RowDefinition />
 								</Grid.RowDefinitions>
-								<Border Width="6" Background="Black"  />
+								<Border Width="6" Background="Black" />
 								<Border Width="12" Grid.Row="1" BorderBrush="Black" BorderThickness="2">
-									<ProgressBar Value="{Binding BatteryLevel, Mode=OneWay}" Orientation="Vertical" SnapsToDevicePixels="True" Name="bar" Foreground="{Binding BatteryColor}">
+									<ProgressBar Value="{Binding BatteryLevel, Mode=OneWay}" Orientation="Vertical" Name="bar" Foreground="{Binding BatteryColor}">
 										<ProgressBar.Template>
 											<ControlTemplate TargetType="{x:Type ProgressBar}">
 												<Grid x:Name="TemplateRoot">
@@ -98,8 +95,8 @@
 										</ProgressBar.Template>
 									</ProgressBar>
 								</Border>
-								<Viewbox Width="8" Child="{StaticResource ChargingIcon}" Grid.Row="1" HorizontalAlignment="Center"
-										 Visibility="{Binding IsPowered, Converter={StaticResource boolToVisibility}}" />
+								<Image Width="6" Source="{StaticResource ChargingIcon}" Grid.Row="1" 
+									   Visibility="{Binding IsPowered, Converter={StaticResource boolToVisibility}}" />
 							</Grid>
 						</DataTemplate>
 					</DataGridTemplateColumn.CellTemplate>
