@@ -22,13 +22,15 @@
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto" />
 			<RowDefinition Height="3*" />
+			<RowDefinition Height="Auto" />
 			<RowDefinition />
 		</Grid.RowDefinitions>
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="1.5*" />
+			<ColumnDefinition Width="Auto" />
 			<ColumnDefinition />
 		</Grid.ColumnDefinitions>
-		<ToolBar Grid.ColumnSpan="2">
+		<ToolBar Grid.ColumnSpan="3">
 			<Button>Refresh</Button>
 		</ToolBar>
 		<DataGrid Grid.Row="1" ItemsSource="{Binding Devices}" Name="devices" HeadersVisibility="Column" HorizontalGridLinesBrush="#DDD" GridLinesVisibility="Horizontal" IsReadOnly="True">
@@ -119,9 +121,13 @@
 				</DataGridTemplateColumn>
 			</DataGrid.Columns>
 		</DataGrid>
-		<ItemsControl Grid.Row="2" ItemsSource="{Binding DiscoveryErrors}" />
-		<TabControl Grid.Row="1" Grid.Column="1" Grid.RowSpan="2"
-					ItemsSource="{Binding SelectedItems, ElementName=devices}"
+		<GridSplitter Grid.Row="2" Height="4" HorizontalAlignment="Stretch"/>
+		<ScrollViewer Grid.Row="3">
+			<ItemsControl ItemsSource="{Binding DiscoveryErrors}" />
+		</ScrollViewer>
+		<GridSplitter Grid.Row="1" Grid.RowSpan="3" Grid.Column="1" HorizontalAlignment="Stretch" Width="4" />
+		<TabControl Grid.Row="1" Grid.Column="2" Grid.RowSpan="3"
+					ItemsSource="{Binding SelectedItems, ElementName=devices}" 
 					SelectedValue="{Binding SelectedValue, ElementName=devices, Mode=OneWay}">
 			<TabControl.ItemTemplate>
 				<DataTemplate>
@@ -144,15 +150,17 @@
 							</StackPanel>
 						</DataTemplate>
 					</DataTemplate.Resources>
-					<ItemsControl ItemsSource="{Binding LogItems}">
-						<ItemsControl.ItemTemplate>
-							<DataTemplate>
-								<Border BorderThickness="0 0 0 1" BorderBrush="DarkGray" Padding="0 0 0 2" Margin="0 0 0 2">
-									<ContentPresenter Content="{Binding}" ContentTemplateSelector="{StaticResource interfaceSelector}" />
-								</Border>
-							</DataTemplate>
-						</ItemsControl.ItemTemplate>
-					</ItemsControl>
+					<ScrollViewer>
+						<ItemsControl ItemsSource="{Binding LogItems}">
+							<ItemsControl.ItemTemplate>
+								<DataTemplate>
+									<Border BorderThickness="0 0 0 1" BorderBrush="DarkGray" Padding="0 0 0 2" Margin="0 0 0 2">
+										<ContentPresenter Content="{Binding}" ContentTemplateSelector="{StaticResource interfaceSelector}" />
+									</Border>
+								</DataTemplate>
+							</ItemsControl.ItemTemplate>
+						</ItemsControl>
+					</ScrollViewer>
 				</DataTemplate>
 			</TabControl.ContentTemplate>
 		</TabControl>
