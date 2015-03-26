@@ -15,6 +15,7 @@
 			</ResourceDictionary.MergedDictionaries>
 			<local:DeviceListViewModel x:Key="designModel" />
 			<local:InterfaceTemplateSelector x:Key="interfaceSelector" />
+			<BooleanToVisibilityConverter x:Key="boolToVisibility" />
 		</ResourceDictionary>
 	</Window.Resources>
 	<Grid d:DataContext="{StaticResource designModel}">
@@ -68,17 +69,19 @@
 				</DataGridTemplateColumn>
 				<DataGridTemplateColumn SortMemberPath="{Binding IsPowered}" CanUserResize="False">
 					<DataGridTemplateColumn.Header>
-						<Label Content="C" ToolTip="Charging?" />
+						<Label ToolTip="Charging?">
+							<Viewbox Width="10" Child="{StaticResource ChargingIcon}" />
+						</Label>
 					</DataGridTemplateColumn.Header>
 					<DataGridTemplateColumn.CellTemplate>
 						<DataTemplate>
-							<Grid Margin="1" SnapsToDevicePixels="True">
+							<Grid Margin="1" SnapsToDevicePixels="True" ToolTip="{Binding PowerSources}">
 								<Grid.RowDefinitions>
 									<RowDefinition Height="2" />
 									<RowDefinition />
 								</Grid.RowDefinitions>
 								<Border Width="6" Background="Black" HorizontalAlignment="Center" SnapsToDevicePixels="True" />
-								<Border Width="12" Grid.Row="1" BorderBrush="Black" BorderThickness="2" SnapsToDevicePixels="True">
+								<Border Width="12" Grid.Row="1" BorderBrush="Black" BorderThickness="2" SnapsToDevicePixels="True" HorizontalAlignment="Center">
 									<ProgressBar Value="{Binding BatteryLevel, Mode=OneWay}" Orientation="Vertical" SnapsToDevicePixels="True" Margin="0,0,-1,-1" Name="bar" Foreground="{Binding BatteryColor}">
 										<ProgressBar.Template>
 											<ControlTemplate TargetType="{x:Type ProgressBar}">
@@ -95,6 +98,8 @@
 										</ProgressBar.Template>
 									</ProgressBar>
 								</Border>
+								<Viewbox Width="8" Child="{StaticResource ChargingIcon}" Grid.Row="1" HorizontalAlignment="Center"
+										 Visibility="{Binding IsPowered, Converter={StaticResource boolToVisibility}}" />
 							</Grid>
 						</DataTemplate>
 					</DataGridTemplateColumn.CellTemplate>
