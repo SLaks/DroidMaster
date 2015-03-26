@@ -37,7 +37,9 @@ namespace DroidMaster.UI {
 				} catch (Exception ex) {
 					DiscoveryErrors.Insert(0, $"An error occurred while scanning for devices:\r\n{ex.Message}");
 				}
-				await Task.Delay(TimeSpan.FromSeconds(5), Stop);
+				try {
+					await Task.Delay(TimeSpan.FromSeconds(5), Stop);
+				} catch (TaskCanceledException) { return; }
 			}
 		}
 
@@ -51,7 +53,9 @@ namespace DroidMaster.UI {
 				} catch (Exception ex) {
 					model.Log($"An error occurred while refreshing device status:\r\n{ex.Message}");
 				}
-				await Task.Delay(TimeSpan.FromSeconds(5), Stop);
+				try {
+					await Task.Delay(TimeSpan.FromSeconds(5), Stop);
+				} catch (TaskCanceledException) { return; }
 			}
 		}
 
