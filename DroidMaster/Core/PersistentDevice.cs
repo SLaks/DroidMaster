@@ -113,6 +113,8 @@ namespace DroidMaster.Core {
 						HandleConnectionError(currentSource, ex);
 					} catch (IOException ex) when (!(ex is FileNotFoundException)) {
 						HandleConnectionError(currentSource, ex);
+					} catch (DeviceNotFoundException ex) {
+						HandleConnectionError(currentSource, ex);
 					} catch (ShellCommandUnresponsiveException ex) {
 						HandleConnectionError(currentSource, ex);
 					} catch (SshConnectionException ex) {

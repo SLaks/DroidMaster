@@ -45,7 +45,7 @@ namespace DroidMaster.Core {
 					await existingDevice.SetDevice(e.Data).ConfigureAwait(false);
 				else {
 					newDevice.ConnectionError += (s, ee) => {
-						OnDiscoveryError(new DataEventArgs<string>($"A connection error occurred on ee.DisposedConnection.ConnectionId:\r\n{ee.Error.Message}"));
+						OnDiscoveryError(new DataEventArgs<string>($"A connection error occurred on {ee.DisposedConnection.ConnectionId}:\r\n{ee.Error.Message}"));
 						ee.DisposedConnection.Owner.ScanFor(ee.DisposedConnection.ConnectionId);
 					};
 					OnDeviceDiscovered(new DataEventArgs<PersistentDevice>(newDevice));
