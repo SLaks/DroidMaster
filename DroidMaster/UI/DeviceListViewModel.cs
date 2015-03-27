@@ -28,15 +28,19 @@ namespace DroidMaster.UI {
 
 		public CancellationToken Stop { get; }
 
+		private async Task RefreshManager() {
+			try {
+				await deviceManager.Refresh();
+			} catch (Exception ex) {
+				DiscoveryErrors.Insert(0, $"An error occurred while scanning for devices:\r\n{ex.Message}");
+			}
+		}
+
 		// These methods are async voids because the caller doesn't care about the result.
 		// Therefore, they must handle all possible exceptions.
 		async void RunRefreshLoop() {
 			while (!Stop.IsCancellationRequested) {
-				try {
-					await deviceManager.Refresh();
-				} catch (Exception ex) {
-					DiscoveryErrors.Insert(0, $"An error occurred while scanning for devices:\r\n{ex.Message}");
-				}
+				await RefreshManager();
 				try {
 					await Task.Delay(TimeSpan.FromSeconds(5), Stop);
 				} catch (TaskCanceledException) { return; }
@@ -48,11 +52,7 @@ namespace DroidMaster.UI {
 			Devices.Add(model);
 
 			while (!Stop.IsCancellationRequested) {
-				try {
-					await model.Refresh();
-				} catch (Exception ex) {
-					model.Log($"An error occurred while refreshing device status:\r\n{ex.Message}");
-				}
+				await model.Refresh();
 				try {
 					await Task.Delay(TimeSpan.FromSeconds(5), Stop);
 				} catch (TaskCanceledException) { return; }
@@ -70,7 +70,7 @@ namespace DroidMaster.UI {
 			}
 		}
 	}
-	class DeviceViewModel : DeviceModel {
+	partial class DeviceViewModel : DeviceModel {
 		public DeviceViewModel(Core.PersistentDevice device) : base(device) { }
 		// Must be public for data-binding
 		public new Core.PersistentDevice Device => base.Device;
@@ -81,5 +81,13 @@ namespace DroidMaster.UI {
 		}
 		public Brush BatteryColor => new SolidColorBrush(	// http://www.google.com/design/spec/style/color.html#color-color-palette
 			BatteryLevel <= 10 ? Color.FromRgb(229, 57, 53) : BatteryLevel < 30 ? Color.FromRgb(255, 235, 59) : Color.FromRgb(76, 175, 80));
+
+		public async Task HandleErrors(Func<DeviceViewModel, Task> func) {
+			try {
+				await func(this);
+			} catch (Exception ex) {
+				Log(ex.Message);
+			}
+		}
 	}
 }

@@ -13,22 +13,26 @@ namespace DroidMaster.Models {
 
 		///<summary>Refreshes status properties (eg, battery, screen state) from the device.</summary>
 		public async Task Refresh() {
-			var output = await Device.ExecuteShellCommand("dumpsys battery && dumpsys input_method").Complete;
-			IsScreenOn = output.Contains("mScreenOn=true");
-
-			BatteryLevel = int.Parse(batteryRegex.Match(output).Groups[1].Value);
-			PowerSources = string.Join(", ", powerSourceRegex.Matches(output).Cast<Match>().Select(m => m.Groups[1]));
-
 			try {
-				IsRooted = (await Device.ExecuteShellCommand("su -c echo BLAH").Complete).Contains("BLAH");
-			} catch (FileNotFoundException) {
-				IsRooted = false;
-			}
+				var output = await Device.ExecuteShellCommand("dumpsys battery && dumpsys input_method").Complete;
+				IsScreenOn = output.Contains("mScreenOn=true");
 
-			AndroidVersion = await Device.ExecuteShellCommand("getprop ro.build.version.release").Complete;
-			Model = Capitalize(await Device.ExecuteShellCommand("getprop ro.product.brand").Complete)
-				  + " " + await Device.ExecuteShellCommand("getprop ro.product.model").Complete;
-			IsWiFiEnabled = await Device.ExecuteShellCommand("getprop wlan.driver.status").Complete == "ok";
+				BatteryLevel = int.Parse(batteryRegex.Match(output).Groups[1].Value);
+				PowerSources = string.Join(", ", powerSourceRegex.Matches(output).Cast<Match>().Select(m => m.Groups[1]));
+
+				try {
+					IsRooted = (await Device.ExecuteShellCommand("su -c echo BLAH").Complete).Contains("BLAH");
+				} catch (FileNotFoundException) {
+					IsRooted = false;
+				}
+
+				AndroidVersion = await Device.ExecuteShellCommand("getprop ro.build.version.release").Complete;
+				Model = Capitalize(await Device.ExecuteShellCommand("getprop ro.product.brand").Complete)
+					  + " " + await Device.ExecuteShellCommand("getprop ro.product.model").Complete;
+				IsWiFiEnabled = await Device.ExecuteShellCommand("getprop wlan.driver.status").Complete == "ok";
+			} catch (Exception ex) {
+				Log($"An error occurred while refreshing device status:\r\n{ex.Message}");
+			}
 		}
 
 		static string Capitalize(string text) { return string.IsNullOrEmpty(text) ? "" : char.ToUpper(text[0]) + text.Substring(1); }

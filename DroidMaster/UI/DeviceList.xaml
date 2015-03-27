@@ -31,7 +31,7 @@
 			<ColumnDefinition />
 		</Grid.ColumnDefinitions>
 		<ToolBar Grid.ColumnSpan="3">
-			<Button>Refresh</Button>
+			<Button Command="{Binding RefreshCommand}">Refresh</Button>
 		</ToolBar>
 		<DataGrid Grid.Row="1" ItemsSource="{Binding Devices}" Name="devices" HeadersVisibility="Column" HorizontalGridLinesBrush="#DDD" GridLinesVisibility="Horizontal" IsReadOnly="True">
 			<DataGrid.CellStyle>
@@ -130,7 +130,7 @@
 					</DataGridTemplateColumn.Header>
 					<DataGridTemplateColumn.CellTemplate>
 						<DataTemplate>
-							<Button HorizontalAlignment="Center" Padding="2" Background="#66DDDDDD">
+							<Button HorizontalAlignment="Center" Padding="2" Background="#66DDDDDD" Command="{Binding ToggleScreenCommand}">
 								<Border CornerRadius="2" BorderThickness="2" Width="22" Height="16" BorderBrush="Black">
 									<Border BorderThickness="2" BorderBrush="Black" Margin="-1" Padding="1">
 										<Border Background="Black" Visibility="{Binding IsScreenOn, Converter={StaticResource boolToVisibility}}" />
