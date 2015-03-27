@@ -16,8 +16,12 @@ namespace DroidMaster.Models {
 		readonly ObservableCollection<object> writableLog = new ObservableCollection<object>();
 
 		internal DeviceModel(PersistentDevice device) {
-			Device = device;
 			LogItems = new ReadOnlyObservableCollection<object>(writableLog);
+			Device = device;
+			Device.PropertyChanged += (s, e) => {
+				if (e.PropertyName == nameof(Device.CurrentConnectionMethod))
+					OnPropertyChanged(nameof(IsOnline));
+			};
 		}
 
 		internal PersistentDevice Device { get; }
@@ -34,6 +38,9 @@ namespace DroidMaster.Models {
 
 		///<summary>Logs something of interest from this device.</summary>
 		public void Log(object item) => writableLog.Insert(0, item);
+
+		///<summary>Indicates whether the device has an active connection.  Offline devices are managed automatically; this property should only be used by UI.</summary>
+		public bool IsOnline => Device.CurrentConnectionMethod != "Offline";
 
 		#region Device Method Wrappers
 		///<summary>Executes a shell command on the device, returning the full output.</summary>

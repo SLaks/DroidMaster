@@ -8,7 +8,11 @@ using System.Windows.Input;
 namespace DroidMaster.UI {
 	partial class DeviceListViewModel {
 		public ActionCommand RefreshCommand => new ActionCommand(async () => {
-			await Task.WhenAll(new[] { RefreshManager() }.Concat(Devices.Select(d => d.Refresh())));
+			await Task.WhenAll(new[] { RefreshManager() }.Concat(
+				// All offline devices should already have a pending refresh from
+				// their refresh loop, so there is no need to queue a second one.
+				Devices.Where(d => d.IsOnline).Select(d => d.Refresh())
+			));
 		});
 
 		static Task EachDevice(IEnumerable<DeviceViewModel> selectedDevices, Func<DeviceViewModel, Task> action) {
