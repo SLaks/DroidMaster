@@ -16,6 +16,11 @@
 			<local:DeviceListViewModel x:Key="designModel" />
 			<local:InterfaceTemplateSelector x:Key="interfaceSelector" />
 			<BooleanToVisibilityConverter x:Key="boolToVisibility" />
+			<DataTemplate x:Key="logItemTemplate">
+				<Border BorderThickness="0 0 0 1" BorderBrush="DarkGray" Padding="0 0 0 2" Margin="0 0 0 2">
+					<ContentPresenter Content="{Binding}" ContentTemplateSelector="{StaticResource interfaceSelector}" />
+				</Border>
+			</DataTemplate>
 		</ResourceDictionary>
 	</Window.Resources>
 	<Grid d:DataContext="{StaticResource designModel}">
@@ -150,7 +155,7 @@
 		</DataGrid>
 		<GridSplitter Grid.Row="2" Height="4" HorizontalAlignment="Stretch"/>
 		<ScrollViewer Grid.Row="3">
-			<ItemsControl ItemsSource="{Binding DiscoveryErrors}" />
+			<ItemsControl ItemsSource="{Binding DiscoveryErrors}" ItemTemplate="{StaticResource logItemTemplate}" />
 		</ScrollViewer>
 		<GridSplitter Grid.Row="1" Grid.RowSpan="3" Grid.Column="1" HorizontalAlignment="Stretch" Width="4" />
 		<TabControl Grid.Row="1" Grid.Column="2" Grid.RowSpan="3"
@@ -178,15 +183,7 @@
 						</DataTemplate>
 					</DataTemplate.Resources>
 					<ScrollViewer>
-						<ItemsControl ItemsSource="{Binding LogItems}">
-							<ItemsControl.ItemTemplate>
-								<DataTemplate>
-									<Border BorderThickness="0 0 0 1" BorderBrush="DarkGray" Padding="0 0 0 2" Margin="0 0 0 2">
-										<ContentPresenter Content="{Binding}" ContentTemplateSelector="{StaticResource interfaceSelector}" />
-									</Border>
-								</DataTemplate>
-							</ItemsControl.ItemTemplate>
-						</ItemsControl>
+						<ItemsControl ItemsSource="{Binding LogItems}" ItemTemplate="{StaticResource logItemTemplate}" />
 					</ScrollViewer>
 				</DataTemplate>
 			</TabControl.ContentTemplate>

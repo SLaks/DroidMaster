@@ -51,7 +51,7 @@ namespace DroidMaster.Core {
 					OnDeviceDiscovered(new DataEventArgs<PersistentDevice>(newDevice));
 				}
 			} catch (Exception ex) {
-				OnDiscoveryError(new DataEventArgs<string>($"An error occurred while identifying {e.Data.ConnectionId}:\r\n${ex.Message}"));
+				OnDiscoveryError(new DataEventArgs<string>($"An error occurred while identifying {e.Data.ConnectionId}:\r\n{ex.Message}"));
 			}
 		}
 
