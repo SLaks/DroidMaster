@@ -37,10 +37,10 @@ namespace DroidMaster.Scripting {
 		///<summary>Maps Roslyn language names to the prefix and suffix to wrap reference files in.</summary>
 		static readonly IReadOnlyDictionary<string, Tuple<string, string>> ReferenceWrappers = new Dictionary<string, Tuple<string, string>> {
 			{ LanguageNames.CSharp, Tuple.Create(string.Concat(StandardNamespaces.Select(n => $"using {n};\r\n"))
-											   + "public static partial class ReferenceCS {\r\n", 
+											   + "public static partial class ReferenceCS {\r\n",
 												 "\r\n}") },
 			{ LanguageNames.VisualBasic, Tuple.Create(string.Concat(StandardNamespaces.Select(n => $"Imports {n}\r\n"))
-													+ "Public Partial Module ReferenceVB\r\n", 
+													+ "Public Partial Module ReferenceVB\r\n",
 													  "\r\nEnd Module") }
 		};
 
@@ -84,7 +84,7 @@ namespace DroidMaster.Scripting {
 			ReferenceProjects = LanguageExtensions.Select(kvp => {
 				var projectName = "DroidMaster.References." + kvp.Value;
 				var project = Workspace.CurrentSolution
-					.AddProject(projectName, projectName, kvp.Value)
+					.AddProject(projectName, projectName + "-" + Guid.NewGuid(), kvp.Value)
 					.AddMetadataReferences(StandardReferences.Select(CreateAssemblyReference))
 					.AddDocument("Reference" + kvp.Key, ReferenceFiles[kvp.Value]).Project;
 
@@ -114,11 +114,11 @@ namespace DroidMaster.Scripting {
 		public Project CreateScriptProject(string scriptFile) {
 			if (ReferenceProjects == null) RefreshReferenceProjects();
 
-			var name = Path.GetFileNameWithoutExtension(scriptFile);
+			var projectName = "DroidMaster.Scripts." + Path.GetFileNameWithoutExtension(scriptFile);
 			var language = LanguageExtensions[Path.GetExtension(scriptFile)];
 
 			var project = Workspace.CurrentSolution
-				.AddProject(name, name, language)
+				.AddProject(projectName, projectName + "-" + Guid.NewGuid(), language)
 				.AddMetadataReferences(StandardReferences.Select(CreateAssemblyReference))
 				.AddProjectReferences(ReferenceProjects.Select(p => new ProjectReference(p)));
 

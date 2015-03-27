@@ -152,6 +152,7 @@
     <Compile Include="UI\DeviceListViewModel.cs" />
     <Compile Include="UI\DeviceListViewModel_Commands.cs" />
     <Compile Include="UI\DeviceListViewModel_Designer.cs" />
+    <Compile Include="UI\DeviceViewModel_Scripting.cs" />
     <Compile Include="UI\SourcePicker.xaml.cs">
       <DependentUpon>SourcePicker.xaml</DependentUpon>
     </Compile>
