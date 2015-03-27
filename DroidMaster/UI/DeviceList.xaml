@@ -7,7 +7,7 @@
         xmlns:models="clr-namespace:DroidMaster.Models"
         xmlns:core="clr-namespace:DroidMaster.Core"
         mc:Ignorable="d"
-        Title="DeviceList" Height="300" Width="600">
+        Title="DeviceList" Height="300" Width="800">
 	<Window.Resources>
 		<ResourceDictionary>
 			<ResourceDictionary.MergedDictionaries>
@@ -38,7 +38,9 @@
 		<ToolBar Grid.ColumnSpan="3">
 			<Button Command="{Binding RefreshCommand}">Refresh</Button>
 		</ToolBar>
-		<DataGrid Grid.Row="1" ItemsSource="{Binding Devices}" Name="devices" HeadersVisibility="Column" HorizontalGridLinesBrush="#DDD" GridLinesVisibility="Horizontal" IsReadOnly="True">
+		<DataGrid Grid.Row="1" ItemsSource="{Binding Devices}" Name="devices" 
+				  HeadersVisibility="Column" HorizontalGridLinesBrush="#DDD" GridLinesVisibility="Horizontal" 
+				  IsReadOnly="True" AutoGenerateColumns="False">
 			<DataGrid.CellStyle>
 				<Style TargetType="DataGridCell">
 					<Setter Property="Template">
@@ -151,6 +153,35 @@
 						</DataTemplate>
 					</DataGridTemplateColumn.CellTemplate>
 				</DataGridTemplateColumn>
+				<DataGridTextColumn Binding="{Binding BatteryLevel, StringFormat=0\\%}" Header="Battery">
+					<DataGridTextColumn.CellStyle>
+						<Style TargetType="DataGridCell">
+							<Setter Property="Template">
+								<Setter.Value>
+									<ControlTemplate TargetType="{x:Type DataGridCell}">
+										<Border Background="{TemplateBinding Background}">
+											<ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Right" />
+										</Border>
+									</ControlTemplate>
+								</Setter.Value>
+							</Setter>
+							<Setter Property="BorderThickness" Value="0" />
+						</Style>
+					</DataGridTextColumn.CellStyle>
+				</DataGridTextColumn>
+				<DataGridTextColumn Binding="{Binding Model}" Header="Model" />
+				<DataGridTextColumn Binding="{Binding AndroidVersion}" Header="OS Version" />
+				<DataGridTemplateColumn SortMemberPath="IsWiFiEnabled" Header="Wi-Fi">
+					<DataGridTemplateColumn.CellTemplate>
+						<DataTemplate>
+							<Button HorizontalAlignment="Center" Padding="2 4" Width="26" Background="#66DDDDDD" Command="{Binding ToggleWiFiCommand}" Height="21">
+								<Image Source="{StaticResource WiFiIcon}"
+									   Visibility="{Binding IsWiFiEnabled, Converter={StaticResource boolToVisibility}}" />
+							</Button>
+						</DataTemplate>
+					</DataGridTemplateColumn.CellTemplate>
+				</DataGridTemplateColumn>
+				<DataGridCheckBoxColumn Binding="{Binding IsRooted, Mode=OneWay}" Header="Rooted?" />
 			</DataGrid.Columns>
 		</DataGrid>
 		<GridSplitter Grid.Row="2" Height="4" HorizontalAlignment="Stretch"/>

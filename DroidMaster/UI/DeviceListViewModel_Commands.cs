@@ -16,5 +16,10 @@ namespace DroidMaster.UI {
 			await HandleErrors(d => d.Device.ExecuteShellCommand("input keyevent 26").Complete);
 			await Refresh();
 		});
+		public ActionCommand ToggleWiFiCommand => new ActionCommand(async () => {
+			await Refresh();	// TODO: Does this need root?
+			await HandleErrors(d => d.Device.ExecuteShellCommand("svc wifi " + (IsWiFiEnabled ? "disable" : "enable")).Complete);
+			await Refresh();
+		});
 	}
 }

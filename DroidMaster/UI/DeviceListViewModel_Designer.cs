@@ -29,6 +29,9 @@ namespace DroidMaster.UI {
 			SetDesignerProperty(1, nameof(DeviceModel.IsScreenOn), true);
 			SetDesignerProperty(2, nameof(DeviceModel.IsScreenOn), true);
 
+			SetDesignerProperty(0, nameof(DeviceModel.IsWiFiEnabled), true);
+			SetDesignerProperty(2, nameof(DeviceModel.IsWiFiEnabled), true);
+
 			Devices.Last().Reboot();
 		}
 
