@@ -37,6 +37,14 @@
 		</Grid.ColumnDefinitions>
 		<ToolBar Grid.ColumnSpan="3">
 			<Button Command="{Binding RefreshCommand}">Refresh</Button>
+			<Label>Selected Devices:</Label>
+			<Menu Background="Transparent" VerticalAlignment="Center">
+				<MenuItem Header="Screen ▾">
+					<MenuItem Header="Turn all screens on" Command="{Binding ScreensOnCommand}" />
+					<MenuItem Header="Turn all screens off" Command="{Binding ScreensOffCommand}" />
+					<MenuItem Header="Toggle all screens" Command="{Binding ToggleScreensCommand}" />
+				</MenuItem>
+			</Menu>
 		</ToolBar>
 		<DataGrid Grid.Row="1" ItemsSource="{Binding Devices}" Name="devices" 
 				  HeadersVisibility="Column" HorizontalGridLinesBrush="#DDD" GridLinesVisibility="Horizontal" 
