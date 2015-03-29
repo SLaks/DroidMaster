@@ -1,9 +1,13 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
+using DroidMaster.Scripting;
 
 namespace DroidMaster.UI {
 	partial class DeviceListViewModel {
@@ -15,7 +19,7 @@ namespace DroidMaster.UI {
 			));
 		});
 
-		static Task EachDevice(IEnumerable<DeviceViewModel> selectedDevices, Func<DeviceViewModel, Task> action) {
+		public static Task EachDevice(IEnumerable<DeviceViewModel> selectedDevices, Func<DeviceViewModel, Task> action) {
 			return Task.WhenAll(selectedDevices.Select(async d => {
 				await d.HandleErrors(action);
 				await d.Refresh();
@@ -49,4 +53,53 @@ namespace DroidMaster.UI {
 			await Refresh();
 		});
 	}
+
+	#region Scripting
+	partial class DeviceListViewModel {
+		public static string ScriptDirectory { get; set; } = Environment.CurrentDirectory;
+
+		public IEnumerable<ScriptCommand> Scripts =>
+			Directory.EnumerateFiles(ScriptDirectory)
+				.Where(s => !Path.GetFileName(s).StartsWith("_"))
+				.Where(s => WorkspaceCreator.LanguageExtensions.ContainsKey(Path.GetExtension(s)))
+				.Select(s => new ScriptCommand(this, s));
+	}
+
+	class ScriptCommand : ICommand {
+		readonly DeviceListViewModel deviceListViewModel;
+		readonly string scriptFile;
+
+		public ScriptCommand(DeviceListViewModel deviceListViewModel, string scriptFile) {
+			this.deviceListViewModel = deviceListViewModel;
+			this.scriptFile = scriptFile;
+		}
+
+		public event EventHandler CanExecuteChanged { add { } remove { } }
+
+		public bool CanExecute(object parameter) => true;
+		public override string ToString() => Path.GetFileName(scriptFile);
+
+		public async void Execute(object parameter) {
+			DeviceScript script;
+			try {
+				var workspace = new RuntimeWorkspaceCreator { ScriptDirectory = Path.GetDirectoryName(scriptFile) };
+				script = await workspace.CompileScript(scriptFile);
+			} catch (Exception ex) {
+				MessageBox.Show($"An error occurred while compiling ${this}:\r\n{ex.Message}");
+				return;
+			}
+
+			// First, clear the Finished/Failed status from any earlier scripts, for a clean grid.
+			foreach (var device in deviceListViewModel.Devices) {
+				// This method will wait for any executing scripts to finish
+				// before clearing the status. Do not await its task; I want
+				// to start running scripts against other devices ASAP.
+				device.ClearScriptStatus().ToString();
+			}
+
+			var selectedDevices = ((IEnumerable)parameter).Cast<DeviceViewModel>();
+			await DeviceListViewModel.EachDevice(selectedDevices, d => d.RunScript(script, ToString()));
+		}
+	}
+	#endregion
 }

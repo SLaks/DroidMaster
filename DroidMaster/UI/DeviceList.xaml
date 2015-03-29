@@ -44,6 +44,14 @@
 					<MenuItem Header="Turn all screens off" Command="{Binding ScreensOffCommand}" />
 					<MenuItem Header="Toggle all screens" Command="{Binding ToggleScreensCommand}" />
 				</MenuItem>
+				<MenuItem Header="Run Script ▾" ItemsSource="{Binding Scripts}">
+					<MenuItem.ItemContainerStyle>
+						<Style TargetType="MenuItem">
+							<Setter Property="Command" Value="{Binding}" />
+							<Setter Property="CommandParameter" Value="{Binding SelectedItems, ElementName=devices}" />
+						</Style>
+					</MenuItem.ItemContainerStyle>
+				</MenuItem>
 			</Menu>
 		</ToolBar>
 		<DataGrid Grid.Row="1" ItemsSource="{Binding Devices}" Name="devices" 
