@@ -29,10 +29,12 @@ namespace DroidMaster.Scripting {
 			);
 		}
 
-		protected override MetadataReference CreateFrameworkReference(string assemblyName) 
+		protected override MetadataReference CreateFrameworkReference(string assemblyName)
 			=> MetadataReference.CreateFromAssembly(
-				Assembly.Load(assemblyName + ", Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089")
-			);
+				Assembly.Load(assemblyName + (assemblyName.Contains("VisualBasic") ?
+					", Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a"
+				  : ",  Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
+			)));
 		protected override MetadataReference CreateLocalReference(Assembly assembly)
 			=> MetadataReference.CreateFromAssembly(assembly);
 
@@ -50,11 +52,13 @@ namespace DroidMaster.Scripting {
 			if (Path.GetFileName(scriptFile).StartsWith("_"))
 				throw new ArgumentException("Reference scripts cannot be compiled directly.", nameof(scriptFile));
 
-			var assemblies = await Task.WhenAll(new[] { CreateScriptProject(scriptFile) }
-				.Concat(ReferenceProjects.Select(Workspace.CurrentSolution.GetProject))
+			RefreshReferenceProjects();
+			var assemblies = await Task.WhenAll(ReferenceProjects
+				.Select(Workspace.CurrentSolution.GetProject)
+				.Concat(new[] { CreateScriptProject(scriptFile) })
 				.Select(p => LoadProject(p, cancellationToken))
 			).ConfigureAwait(false);
-			var scriptType = assemblies.First().GetType("Script");
+			var scriptType = assemblies.Last().GetType("Script");
 			return (DeviceScript)Delegate.CreateDelegate(typeof(DeviceScript), scriptType, "Run");
 		}
 	}

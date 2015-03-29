@@ -18,7 +18,7 @@ namespace DroidMaster.Scripting {
 		};
 
 		static IReadOnlyCollection<string> FrameworkReferences = new[] {
-			"mscorlib", "System", "System.Core", "System.Xml.Linq",
+			"mscorlib", "System", "System.Core", "System.Xml.Linq", "Microsoft.VisualBasic"
 		};
 		static IReadOnlyCollection<Assembly> LocalReferences = new[] { typeof(WorkspaceCreator).Assembly };
 
@@ -51,12 +51,12 @@ namespace DroidMaster.Scripting {
 				string.Concat(StandardNamespaces.Select(n => $"using {n};\r\n"))
 			  + "\r\nusing static ReferenceCS;\r\n"
 			  + "\r\nusing static ReferenceVB;\r\n"
-			  + "\r\npublic async Task Run(DeviceModel device) {\r\n",
+			  + "\r\npublic static async Task Run(DeviceModel device) {\r\n",
 				"\r\n}") },
 			{ LanguageNames.VisualBasic, Tuple.Create(
 				string.Concat(StandardNamespaces.Select(n => $"Imports {n}\r\n"))
 			  + "\r\nImports ReferenceCS\r\n"	// ReferenceVB is a module, so we don't need to import it
-			  + "\r\nPublic Async Function Run(device As DeviceModel) As Task\r\n",
+			  + "\r\nPublic Shared Async Function Run(device As DeviceModel) As Task\r\n",
 				"\r\nEnd Function") }
 		};
 
@@ -89,6 +89,9 @@ namespace DroidMaster.Scripting {
 					.AddMetadataReferences(FrameworkReferences.Select(CreateFrameworkReference))
 					.AddMetadataReferences(LocalReferences.Select(CreateLocalReference))
 					.AddDocument("Reference" + kvp.Key, ReferenceFiles[kvp.Value]).Project;
+
+				project = project.WithCompilationOptions(project.CompilationOptions
+					.WithOutputKind(OutputKind.DynamicallyLinkedLibrary));
 
 				// Reference projects cannot use Script documents, because they wrap
 				// everything in an internal Script class.  Instead, I make a normal
@@ -125,7 +128,10 @@ namespace DroidMaster.Scripting {
 					.AddMetadataReferences(LocalReferences.Select(CreateLocalReference))
 				.AddProjectReferences(ReferenceProjects.Select(p => new ProjectReference(p)));
 
-			project = project.WithParseOptions(project.ParseOptions.WithKind(SourceCodeKind.Script));
+			project = project
+				.WithParseOptions(project.ParseOptions.WithKind(SourceCodeKind.Script))
+				.WithCompilationOptions(project.CompilationOptions
+					.WithOutputKind(OutputKind.DynamicallyLinkedLibrary));
 			Workspace.TryApplyChanges(project.Solution);
 
 			OpenDocument(project.Id, scriptFile, ScriptWrappers[language]);
