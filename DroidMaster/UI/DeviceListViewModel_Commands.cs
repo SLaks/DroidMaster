@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using DroidMaster.Scripting;
 
 namespace DroidMaster.UI {
 	partial class DeviceListViewModel {
@@ -49,4 +51,41 @@ namespace DroidMaster.UI {
 			await Refresh();
 		});
 	}
+
+	#region Scripting
+	partial class DeviceListViewModel {
+		public static string ScriptDirectory { get; set; } = Environment.CurrentDirectory;
+
+		public IEnumerable<ScriptCommand> Scripts =>
+			Directory.EnumerateFiles(ScriptDirectory)
+				.Where(s => !Path.GetFileName(s).StartsWith("_"))
+				.Where(s => WorkspaceCreator.LanguageExtensions.ContainsKey(Path.GetExtension(s)))
+				.Select(s => new ScriptCommand(this, s));
+	}
+
+	class ScriptCommand : ICommand {
+		readonly DeviceListViewModel deviceListViewModel;
+		readonly string scriptPath;
+
+		public ScriptCommand(DeviceListViewModel deviceListViewModel, string scriptPath) {
+			this.deviceListViewModel = deviceListViewModel;
+			this.scriptPath = scriptPath;
+		}
+
+		public event EventHandler CanExecuteChanged { add { } remove { } }
+
+		public bool CanExecute(object parameter) => ((IEnumerable<object>)parameter).Any();
+
+		public void Execute(object parameter) {
+			DeviceScript script;
+			try {
+				var workspace = new RuntimeWorkspaceCreator { ScriptDirectory = Path.GetDirectoryName(scriptPath) };
+				script = workspace.CompileScript(
+			} catch (Exception ex) {
+
+				throw;
+			}
+		}
+	}
+	#endregion
 }
