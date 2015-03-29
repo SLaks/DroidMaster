@@ -13,7 +13,7 @@ namespace DroidMaster.Scripting {
 		///<summary>Namespaces referenced in every source file.</summary>
 		static readonly IReadOnlyCollection<string> StandardNamespaces = new[] {
 			"System", "System.Collections.Generic", "System.IO", "System.Linq", "System.Text",
-			"System.Threading.Tasks", "System.Xml.Linq",
+			"System.Threading", "System.Threading.Tasks", "System.Xml.Linq",
 			"DroidMaster", "DroidMaster.Models"
 		};
 
@@ -51,12 +51,12 @@ namespace DroidMaster.Scripting {
 				string.Concat(StandardNamespaces.Select(n => $"using {n};\r\n"))
 			  + "\r\nusing static ReferenceCS;\r\n"
 			  + "\r\nusing static ReferenceVB;\r\n"
-			  + "\r\npublic static async Task Run(DeviceModel device) {\r\n",
+			  + "\r\npublic static async Task Run(DeviceModel device, CancellationToken cancellationToken) {\r\n",
 				"\r\n}") },
 			{ LanguageNames.VisualBasic, Tuple.Create(
 				string.Concat(StandardNamespaces.Select(n => $"Imports {n}\r\n"))
 			  + "\r\nImports ReferenceCS\r\n"	// ReferenceVB is a module, so we don't need to import it
-			  + "\r\nPublic Shared Async Function Run(device As DeviceModel) As Task\r\n",
+			  + "\r\nPublic Shared Async Function Run(device As DeviceModel, cancellationToken As CancellationToken) As Task\r\n",
 				"\r\nEnd Function") }
 		};
 

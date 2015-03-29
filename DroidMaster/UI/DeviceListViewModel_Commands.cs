@@ -63,6 +63,11 @@ namespace DroidMaster.UI {
 				.Where(s => !Path.GetFileName(s).StartsWith("_"))
 				.Where(s => WorkspaceCreator.LanguageExtensions.ContainsKey(Path.GetExtension(s)))
 				.Select(s => new ScriptCommand(this, s));
+
+		public ICommand CancelScriptsCommand => CreateSelectionCommand(d => {
+			d.Device.CancellationToken?.Cancel();
+			return Task.CompletedTask;
+		});
 	}
 
 	class ScriptCommand : ICommand {

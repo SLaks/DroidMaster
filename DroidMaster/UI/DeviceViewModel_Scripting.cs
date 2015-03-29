@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using DroidMaster.Models;
 using DroidMaster.Scripting;
@@ -41,16 +42,22 @@ namespace DroidMaster.UI {
 			using (await scriptLock.LockAsync()) {
 				ScriptStatus = ScriptStatus.Running;
 				ScriptName = name;
+				Device.CancellationToken = new CancellationTokenSource();
 				Log($"Running script {name}...");
 
 				try {
-					await script(this);
+					await script(this, Device.CancellationToken.Token);
 					ScriptStatus = ScriptStatus.Success;
+				} catch (TaskCanceledException) {
+					ScriptStatus = ScriptStatus.Cancelled;
+				} catch (OperationCanceledException) {
+					ScriptStatus = ScriptStatus.Cancelled;
 				} catch (Exception ex) {
 					ScriptStatus = ScriptStatus.Failure;
 					Status = ex.Message;
 					Log($"An error occurred while running {name}:\r\n{ex}");
 				}
+				Device.CancellationToken = null;
 			}
 		}
 	}
@@ -64,6 +71,8 @@ namespace DroidMaster.UI {
 		///<summary>The script completed successfully.</summary>
 		Success,
 		///<summary>The script threw an exception.</summary>
-		Failure
+		Failure,
+		///<summary>The script was cancelled by the user.</summary>
+		Cancelled
 	}
 }

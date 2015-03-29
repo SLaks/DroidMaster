@@ -36,6 +36,7 @@ namespace DroidMaster.UI {
 			Devices[1].ScriptStatus = ScriptStatus.Running;
 			Devices[2].ScriptStatus = ScriptStatus.Success;
 			Devices[3].ScriptStatus = ScriptStatus.Failure;
+			Devices[4].ScriptStatus = ScriptStatus.Cancelled;
 
 			Devices.Last().Reboot();
 		}

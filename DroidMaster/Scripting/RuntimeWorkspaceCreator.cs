@@ -12,7 +12,7 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace DroidMaster.Scripting {
 	///<summary>A delegate that contains a compiled script to run against a device.</summary>
-	delegate Task DeviceScript(DeviceModel device);
+	delegate Task DeviceScript(DeviceModel device, CancellationToken cancellationToken);
 
 	///<summary>A <see cref="WorkspaceCreator"/> that creates workspaces used to compile and run scripts.  This does not depend on Visual Studio.</summary>
 	class RuntimeWorkspaceCreator : WorkspaceCreator {

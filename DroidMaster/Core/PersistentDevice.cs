@@ -35,7 +35,7 @@ namespace DroidMaster.Core {
 	///  4. Any connection that is passed to <see cref="SetDevice(IDeviceConnection)"/> will be eventually be disposed,
 	///     when it errors, is replaced with a new connection or when the entire class is disposed.
 	///</remarks>
-	class PersistentDevice : NotifyPropertyChanged, IDeviceConnection {
+	class PersistentDevice : NotifyPropertyChanged {
 		///<summary>Controls reads and writes of <see cref="volatileDeviceSource"/>.</summary>
 		readonly AsyncReaderWriterLock sourceLock = new AsyncReaderWriterLock();
 		///<summary>The current device, if any, or a promise that will resolve to the current device once it arrives.</summary>
@@ -55,9 +55,8 @@ namespace DroidMaster.Core {
 			LatestConnectionId = initialConnection.ConnectionId;
 		}
 
-
 		public ICommandResult ExecuteShellCommand(string command) {
-			var result = new ForwardingCommandResult();
+			var result = new ForwardingCommandResult { CommandText = command };
 			PropertyChangedEventHandler onPropertyChanged = (s, e) => result.OnPropertyChanged(e);
 			result.Complete = Execute(c => {
 				// Each time we re-execute the command, change our outer
@@ -68,6 +67,7 @@ namespace DroidMaster.Core {
 				result.Inner.PropertyChanged += onPropertyChanged;
 				return result.Inner.Complete;
 			});
+			result.Complete.ContinueWith(_ => result.OnPropertyChanged(new PropertyChangedEventArgs(nameof(result.Output))), TaskContinuationOptions.OnlyOnCanceled);
 			return result;
 		}
 
@@ -75,39 +75,48 @@ namespace DroidMaster.Core {
 			public ICommandResult Inner { get; set; }
 			public Task<string> Complete { get; set; }
 
-			public string Output => Inner.Output;
-			public string CommandText => Inner.CommandText;
+			public string Output => Complete.IsCanceled ? "(Cancelled)" : Inner?.Output;
+			public string CommandText { get; set; }
 
 			public event PropertyChangedEventHandler PropertyChanged;
 			public void OnPropertyChanged(PropertyChangedEventArgs e) { PropertyChanged?.Invoke(this, e); }
 		}
 
-		public Task PullFileAsync(string devicePath, string localPath, CancellationToken token = default(CancellationToken), IProgress<double> progress = null) {
-			return Execute(d => d.PullFileAsync(devicePath, localPath, token, progress));
+		public Task PullFileAsync(string devicePath, string localPath, IProgress<double> progress = null) {
+			return Execute(d => d.PullFileAsync(devicePath, localPath, CurrentToken, progress));
 		}
 
-		public Task PushFileAsync(string localPath, string devicePath, CancellationToken token = default(CancellationToken), IProgress<double> progress = null) {
-			return Execute(d => d.PushFileAsync(localPath, devicePath, token, progress));
+		public Task PushFileAsync(string localPath, string devicePath, IProgress<double> progress = null) {
+			return Execute(d => d.PushFileAsync(localPath, devicePath, CurrentToken, progress));
 		}
 
 		public Task RebootAsync() {
 			return Execute(d => d.RebootAsync());
 		}
 
+		///<summary>Gets or sets an optional <see cref="CancellationTokenSource"/> that will cancel all active or pending operations when set.</summary>
+		///<remarks>Setting this property will not affect any operations that have already started.</remarks>
+		public CancellationTokenSource CancellationToken { get; set; }
+		///<summary>Gets the current token from the <see cref="CancellationToken"/>, if any.</summary>
+		CancellationToken CurrentToken => CancellationToken?.Token ?? new CancellationToken();
+
 		Task Execute(Func<IDeviceConnection, Task> operation) => Execute(async c => { await operation(c); return true; });
 		///<summary>Keeps running an operation against the current connection until no errors occur.</summary>
 		async Task<T> Execute<T>(Func<IDeviceConnection, Task<T>> operation) {
 			while (true) {
 				var currentSource = volatileDeviceSource;
-				var connection = await currentSource.Task.ConfigureAwait(false);
+				var token = CurrentToken;	// Only read this field once
+				await Task.WhenAny(token.AsTask(), currentSource.Task).ConfigureAwait(false);
+				token.ThrowIfCancellationRequested();
 
-				using (await sourceLock.ReaderLockAsync().ConfigureAwait(false)) {
+				using (await sourceLock.ReaderLockAsync(CurrentToken).ConfigureAwait(false)) {
 					// If a different device was installed between waiting for the source and
 					// acquiring the lock, start over.
 					if (currentSource != volatileDeviceSource)
 						continue;
 					try {
-						return await operation(connection).ConfigureAwait(false);
+						// We already awaited currentSource.Task, so .Result is safe
+						return await operation(currentSource.Task.Result).ConfigureAwait(false);
 						// If a connection-level error occurs, clear the device, then wait for the next connection.
 					} catch (SocketException ex) {
 						HandleConnectionError(currentSource, ex);
@@ -207,8 +216,6 @@ namespace DroidMaster.Core {
 			}
 		}
 		public void Dispose() { Dispose(true); }
-
-		DeviceScanner IDeviceConnection.Owner { get { throw new NotSupportedException(); } }
 	}
 	class ConnectionErrorEventArgs : EventArgs {
 		public ConnectionErrorEventArgs(IDeviceConnection connection, Exception error) {

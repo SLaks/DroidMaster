@@ -65,6 +65,8 @@
 					</MenuItem.ItemContainerStyle>
 				</MenuItem>
 			</Menu>
+			<Button Content="Cancel" ToolTip="Cancels any scripts that are still running on the selected devices."
+					Command="{Binding CancelScriptsCommand}" CommandParameter="{Binding SelectedItems, ElementName=devices}" />
 		</ToolBar>
 		<DataGrid Grid.Row="1" ItemsSource="{Binding Devices}" Name="devices" 
 				  HeadersVisibility="Column" HorizontalGridLinesBrush="#DDD" GridLinesVisibility="Horizontal" 
@@ -262,6 +264,13 @@
 									<Setter TargetName="circle" Property="BorderBrush" Value="#E53935" />
 									<Setter TargetName="content" Property="Text" Value="✗" />
 									<Setter TargetName="content" Property="Foreground" Value="#760A0A" />
+								</DataTrigger>
+								<DataTrigger Binding="{Binding ScriptStatus}" Value="Cancelled">
+									<Setter TargetName="circle" Property="Background" Value="#FFF176" />
+									<Setter TargetName="circle" Property="BorderBrush" Value="#FDD835" />
+									<Setter TargetName="content" Property="Text" Value="!" />
+									<Setter TargetName="content" Property="FontWeight" Value="Bold" />
+									<Setter TargetName="content" Property="Foreground" Value="#F9A825" />
 								</DataTrigger>
 							</DataTemplate.Triggers>
 						</DataTemplate>

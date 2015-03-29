@@ -31,7 +31,9 @@ namespace DroidMaster.Models {
 					  + " " + await Device.ExecuteShellCommand("getprop ro.product.model").Complete;
 				IsWiFiEnabled = await Device.ExecuteShellCommand("getprop wlan.driver.status").Complete == "ok";
 			} catch (Exception ex) {
-				Log($"An error occurred while refreshing device status:\r\n{ex.Message}");
+				// Ignore cancellations from script cancellation tokens
+				if (!(ex is OperationCanceledException))
+					Log($"An error occurred while refreshing device status:\r\n{ex.Message}");
 			}
 		}
 

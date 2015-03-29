@@ -76,7 +76,11 @@ DroidMaster Device Script
 This script will run against connected Android devices.
 Write code using the pre-supplied `device` parameter to
 control the current device.  Your code is wrapped in an
-async method; you must await calls to every method.
+async method; you must await calls to every method. The
+script also receives a cancellationToken parameter; you
+can pass this token to external asynchronous calls like
+Task.Delay(). All methods on device automatically honor
+this token, so there is no need to explicitly pass it.
 
 To create reusable methods or classes, make a file that
 starts with an underscore; it will be referenced by all
