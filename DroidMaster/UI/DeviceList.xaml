@@ -7,7 +7,7 @@
         xmlns:models="clr-namespace:DroidMaster.Models"
         xmlns:core="clr-namespace:DroidMaster.Core"
         mc:Ignorable="d"
-        Title="DeviceList" Height="400" Width="900">
+        Title="Devices – DroidMaster" Height="400" Width="900">
 	<Window.Resources>
 		<ResourceDictionary>
 			<ResourceDictionary.MergedDictionaries>
