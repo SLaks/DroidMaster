@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -16,10 +17,10 @@ namespace DroidMaster.Scripting {
 			"DroidMaster", "DroidMaster.Models"
 		};
 
-		static IReadOnlyCollection<string> StandardReferences = new[] {
+		static IReadOnlyCollection<string> FrameworkReferences = new[] {
 			"mscorlib", "System", "System.Core", "System.Xml.Linq",
-			typeof(WorkspaceCreator).Assembly.GetName().Name
 		};
+		static IReadOnlyCollection<Assembly> LocalReferences = new[] { typeof(WorkspaceCreator).Assembly };
 
 		///<summary>Maps file extensions to Roslyn language names.</summary>
 		public static readonly Dictionary<string, string> LanguageExtensions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) {
@@ -85,7 +86,8 @@ namespace DroidMaster.Scripting {
 				var projectName = "DroidMaster.References." + kvp.Value;
 				var project = Workspace.CurrentSolution
 					.AddProject(projectName, projectName + "-" + Guid.NewGuid(), kvp.Value)
-					.AddMetadataReferences(StandardReferences.Select(CreateAssemblyReference))
+					.AddMetadataReferences(FrameworkReferences.Select(CreateFrameworkReference))
+					.AddMetadataReferences(LocalReferences.Select(CreateLocalReference))
 					.AddDocument("Reference" + kvp.Key, ReferenceFiles[kvp.Value]).Project;
 
 				// Reference projects cannot use Script documents, because they wrap
@@ -119,7 +121,8 @@ namespace DroidMaster.Scripting {
 
 			var project = Workspace.CurrentSolution
 				.AddProject(projectName, projectName + "-" + Guid.NewGuid(), language)
-				.AddMetadataReferences(StandardReferences.Select(CreateAssemblyReference))
+					.AddMetadataReferences(FrameworkReferences.Select(CreateFrameworkReference))
+					.AddMetadataReferences(LocalReferences.Select(CreateLocalReference))
 				.AddProjectReferences(ReferenceProjects.Select(p => new ProjectReference(p)));
 
 			project = project.WithParseOptions(project.ParseOptions.WithKind(SourceCodeKind.Script));
@@ -139,8 +142,10 @@ namespace DroidMaster.Scripting {
 		///<summary>Closes a document that was previously opened by <see cref="OpenDocument"/>, if necessary.</summary>
 		protected virtual void CloseDocument(DocumentId documentId) { }
 
-		///<summary>Creates a <see cref="MetadataReference"/> to the specified assembly.</summary>
-		///<param name="assemblyName">The name of the assembly to reference.  This must either be part of the BCL or loaded into the current process.</param>
-		protected abstract MetadataReference CreateAssemblyReference(string assemblyName);
+		///<summary>Creates a <see cref="MetadataReference"/> to a BCL assembly.</summary>
+		protected abstract MetadataReference CreateFrameworkReference(string assemblyName);
+
+		///<summary>Creates a <see cref="MetadataReference"/> to an assembly that is already loaded.</summary>
+		protected abstract MetadataReference CreateLocalReference(Assembly assembly);
 	}
 }

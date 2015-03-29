@@ -29,9 +29,12 @@ namespace DroidMaster.Scripting {
 			);
 		}
 
-		protected override MetadataReference CreateAssemblyReference(string assemblyName) {
-			return MetadataReference.CreateFromAssembly(Assembly.Load(assemblyName));
-		}
+		protected override MetadataReference CreateFrameworkReference(string assemblyName) 
+			=> MetadataReference.CreateFromAssembly(
+				Assembly.Load(assemblyName + ", Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089")
+			);
+		protected override MetadataReference CreateLocalReference(Assembly assembly)
+			=> MetadataReference.CreateFromAssembly(assembly);
 
 		static async Task<Assembly> LoadProject(Project project, CancellationToken cancellationToken) {
 			var stream = new MemoryStream();

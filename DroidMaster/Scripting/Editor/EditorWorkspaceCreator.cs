@@ -52,17 +52,14 @@ namespace DroidMaster.Scripting.Editor {
 		///<summary>Maps full paths on disk to <see cref="IProjectionBufferBase"/>s to show in the editor.</summary>
 		public IReadOnlyDictionary<string, IProjectionBufferBase> EditorBuffers => editorBuffers;
 
-		protected override MetadataReference CreateAssemblyReference(string assemblyName) {
-			// TODO: Better check for framework vs. non-framework assemblies.
-			if (assemblyName != typeof(WorkspaceCreator).Assembly.GetName().Name)
-				return EditorWorkspace.CreateFrameworkReference(assemblyName);
-
-			var location = Assembly.Load(assemblyName).Location;
-			var xmlDocFile = Path.ChangeExtension(location, ".xml");
-			return MetadataReference.CreateFromFile(location,
+		protected override MetadataReference CreateLocalReference(Assembly assembly) {
+			var xmlDocFile = Path.ChangeExtension(assembly.Location, ".xml");
+			return MetadataReference.CreateFromFile(assembly.Location,
 				documentation: File.Exists(xmlDocFile) ? new XmlDocumentationProvider(xmlDocFile) : null
 			);
 		}
+		protected override MetadataReference CreateFrameworkReference(string assemblyName)
+			=> EditorWorkspace.CreateFrameworkReference(assemblyName);
 
 		static readonly IReadOnlyDictionary<string, string> LanguageContentTypes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) {
 			{ LanguageNames.CSharp, "CSharp" },
