@@ -82,6 +82,9 @@ can pass this token to external asynchronous calls like
 Task.Delay(). All methods on device automatically honor
 this token, so there is no need to explicitly pass it.
 
+The folder containing the script is available in the
+ScriptDirectory property.
+
 To create reusable methods or classes, make a file that
 starts with an underscore; it will be referenced by all
 script files.";

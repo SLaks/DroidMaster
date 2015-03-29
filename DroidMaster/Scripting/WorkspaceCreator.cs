@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Editing;
 
 namespace DroidMaster.Scripting {
 	///<summary>Loads device scripts into a Roslyn Workspace.</summary>
@@ -52,12 +53,14 @@ namespace DroidMaster.Scripting {
 			  + "\r\nusing static ReferenceCS;\r\n"
 			  + "\r\nusing static ReferenceVB;\r\n"
 			  + "\r\npublic static async Task Run(DeviceModel device, CancellationToken cancellationToken) {\r\n",
-				"\r\n}") },
+				"\r\n}"	// We append a constant field initialized to the path, following this hard-coded documentation comment.
+			  + "\r\n///<summary>Gets the full path to the directory containing the script, including the trailing \\.</summary>") },
 			{ LanguageNames.VisualBasic, Tuple.Create(
 				string.Concat(StandardNamespaces.Select(n => $"Imports {n}\r\n"))
 			  + "\r\nImports ReferenceCS\r\n"	// ReferenceVB is a module, so we don't need to import it
 			  + "\r\nPublic Shared Async Function Run(device As DeviceModel, cancellationToken As CancellationToken) As Task\r\n",
-				"\r\nEnd Function") }
+				"\r\nEnd Function"
+			  + "\r\n'''<summary>Gets the full path to the directory containing the script, including the trailing \\.</summary>") }
 		};
 
 
@@ -134,7 +137,17 @@ namespace DroidMaster.Scripting {
 					.WithOutputKind(OutputKind.DynamicallyLinkedLibrary));
 			Workspace.TryApplyChanges(project.Solution);
 
-			OpenDocument(project.Id, scriptFile, ScriptWrappers[language]);
+			// SyntaxGenerator cannot generate XML doc comments, so I put them at the end of the wrappers.
+			var syntaxGenerator = project.LanguageServices.GetRequiredService<SyntaxGenerator>();
+			var directoryField = syntaxGenerator.FieldDeclaration("ScriptDirectory",
+				syntaxGenerator.TypeExpression(SpecialType.System_String),
+				Accessibility.Private, DeclarationModifiers.Const,
+				syntaxGenerator.LiteralExpression(Path.GetDirectoryName(scriptFile) + @"\")
+			).NormalizeWhitespace();
+
+			var wrappers = ScriptWrappers[language];
+			OpenDocument(project.Id, scriptFile, Tuple.Create(wrappers.Item1, wrappers.Item2 + "\r\n" + directoryField.ToFullString()));
+
 			return Workspace.CurrentSolution.GetProject(project.Id);
 		}
 
