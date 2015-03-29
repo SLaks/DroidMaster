@@ -72,7 +72,7 @@ namespace DroidMaster.Core {
 			public ICommandResult ExecuteShellCommand(string command) {
 				var result = new OutputReporter { CommandText = command };
 				result.Complete = Task.Run(() => {
-					Device.ExecuteShellCommand(command, result);
+					AdbHelper.Instance.ExecuteRemoteCommand(AndroidDebugBridge.SocketAddress, command, Device, result);
 					return result.Output;
 				});
 				return result;
