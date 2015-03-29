@@ -52,9 +52,9 @@
 			<Label>Selected Devices:</Label>
 			<Menu Background="Transparent" VerticalAlignment="Center">
 				<MenuItem Header="Screen ▾">
-					<MenuItem Header="Turn all screens on" Command="{Binding ScreensOnCommand}" />
-					<MenuItem Header="Turn all screens off" Command="{Binding ScreensOffCommand}" />
-					<MenuItem Header="Toggle all screens" Command="{Binding ToggleScreensCommand}" />
+					<MenuItem Header="Turn all screens on"	Command="{Binding ScreensOnCommand}"		CommandParameter="{Binding SelectedItems, ElementName=devices}" />
+					<MenuItem Header="Turn all screens off"	Command="{Binding ScreensOffCommand}"		CommandParameter="{Binding SelectedItems, ElementName=devices}" />
+					<MenuItem Header="Toggle all screens"	Command="{Binding ToggleScreensCommand}"	CommandParameter="{Binding SelectedItems, ElementName=devices}" />
 				</MenuItem>
 				<MenuItem Header="Run Script ▾" ItemsSource="{Binding Scripts}">
 					<MenuItem.ItemContainerStyle>

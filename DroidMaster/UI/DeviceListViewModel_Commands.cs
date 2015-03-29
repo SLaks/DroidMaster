@@ -26,7 +26,7 @@ namespace DroidMaster.UI {
 			}));
 		}
 		static ICommand CreateSelectionCommand(Func<DeviceViewModel, Task> action) =>
-			new ActionCommand<IEnumerable<DeviceViewModel>>(selectedDevices => EachDevice(selectedDevices, action));
+			new ActionCommand<IEnumerable>(selectedDevices => EachDevice(selectedDevices.Cast<DeviceViewModel>(), action));
 		public ICommand ToggleScreensCommand { get; } = CreateSelectionCommand(d => d.ToggleScreen());
 		public ICommand ScreensOffCommand => CreateSelectionCommand(async d => {
 			await d.Refresh();
