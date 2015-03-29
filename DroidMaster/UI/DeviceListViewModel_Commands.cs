@@ -85,7 +85,7 @@ namespace DroidMaster.UI {
 				var workspace = new RuntimeWorkspaceCreator { ScriptDirectory = Path.GetDirectoryName(scriptFile) };
 				script = await workspace.CompileScript(scriptFile);
 			} catch (Exception ex) {
-				MessageBox.Show($"An error occurred while compiling ${this}:\r\n{ex.Message}");
+				MessageBox.Show($"An error occurred while compiling {this}:\r\n{ex.Message}");
 				return;
 			}
 

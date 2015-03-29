@@ -21,6 +21,18 @@
 					<ContentPresenter Content="{Binding}" ContentTemplateSelector="{StaticResource interfaceSelector}" />
 				</Border>
 			</DataTemplate>
+			<DataTemplate DataType="{x:Type models:ProgressModel}">
+				<DockPanel LastChildFill="True">
+					<Label DockPanel.Dock="Left" Content="{Binding Description}" />
+					<ProgressBar Maximum="1" Value="{Binding Progress}" />
+				</DockPanel>
+			</DataTemplate>
+			<DataTemplate DataType="{x:Type core:ICommandResult}">
+				<StackPanel>
+					<Label FontWeight="Bold" Content="{Binding CommandText}" />
+					<Label Content="{Binding Output}" />
+				</StackPanel>
+			</DataTemplate>
 		</ResourceDictionary>
 	</Window.Resources>
 	<Grid d:DataContext="{StaticResource designModel}">
@@ -199,6 +211,13 @@
 					</DataGridTemplateColumn.CellTemplate>
 				</DataGridTemplateColumn>
 				<DataGridCheckBoxColumn Binding="{Binding IsRooted, Mode=OneWay}" Header="Rooted?" />
+				<DataGridTemplateColumn SortMemberPath="Status" Header="Status">
+					<DataGridTemplateColumn.CellTemplate>
+						<DataTemplate>
+							<ContentPresenter Content="{Binding Status}" ContentTemplateSelector="{StaticResource interfaceSelector}" />
+						</DataTemplate>
+					</DataGridTemplateColumn.CellTemplate>
+				</DataGridTemplateColumn>
 			</DataGrid.Columns>
 		</DataGrid>
 		<GridSplitter Grid.Row="2" Height="4" HorizontalAlignment="Stretch"/>
@@ -216,20 +235,6 @@
 			</TabControl.ItemTemplate>
 			<TabControl.ContentTemplate>
 				<DataTemplate>
-					<DataTemplate.Resources>
-						<DataTemplate DataType="models:ProgressModel">
-							<DockPanel LastChildFill="True">
-								<Label DockPanel.Dock="Left" Content="{Binding Description}" />
-								<ProgressBar Maximum="1" Value="{Binding Progress}" />
-							</DockPanel>
-						</DataTemplate>
-						<DataTemplate DataType="core:ICommandResult">
-							<StackPanel>
-								<Label FontWeight="Bold" Content="{Binding CommandText}" />
-								<Label Content="{Binding Output}" />
-							</StackPanel>
-						</DataTemplate>
-					</DataTemplate.Resources>
 					<ScrollViewer>
 						<ItemsControl ItemsSource="{Binding LogItems}" ItemTemplate="{StaticResource logItemTemplate}" />
 					</ScrollViewer>

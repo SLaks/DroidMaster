@@ -41,6 +41,7 @@ namespace DroidMaster.UI {
 			using (await scriptLock.LockAsync()) {
 				ScriptStatus = ScriptStatus.Running;
 				ScriptName = name;
+				Log($"Running script {name}...");
 
 				try {
 					await script(this);
