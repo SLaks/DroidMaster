@@ -32,6 +32,11 @@ namespace DroidMaster.UI {
 			SetDesignerProperty(0, nameof(DeviceModel.IsWiFiEnabled), true);
 			SetDesignerProperty(2, nameof(DeviceModel.IsWiFiEnabled), true);
 
+			Devices[0].ScriptStatus = ScriptStatus.None;
+			Devices[1].ScriptStatus = ScriptStatus.Running;
+			Devices[2].ScriptStatus = ScriptStatus.Success;
+			Devices[3].ScriptStatus = ScriptStatus.Failure;
+
 			Devices.Last().Reboot();
 		}
 

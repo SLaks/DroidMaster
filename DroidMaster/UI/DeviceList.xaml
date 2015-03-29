@@ -7,7 +7,7 @@
         xmlns:models="clr-namespace:DroidMaster.Models"
         xmlns:core="clr-namespace:DroidMaster.Core"
         mc:Ignorable="d"
-        Title="DeviceList" Height="300" Width="800">
+        Title="DeviceList" Height="400" Width="900">
 	<Window.Resources>
 		<ResourceDictionary>
 			<ResourceDictionary.MergedDictionaries>
@@ -98,7 +98,7 @@
 									<Image Width="13" HorizontalAlignment="Right" Margin="0,-18,-1,0" Name="usbIcon" Visibility="Collapsed" Source="{StaticResource UsbIcon}" />
 									<Image Width="12" HorizontalAlignment="Right" Margin="0,-15,1,0" Name="wifiIcon" Visibility="Collapsed" Source="{StaticResource WiFiIcon}" />
 								</Grid>
-								<Label Content="{Binding Device.LatestConnectionId}" VerticalAlignment="Center" />
+								<TextBlock Text="{Binding Device.LatestConnectionId}" VerticalAlignment="Center" Padding="5" />
 							</StackPanel>
 							<DataTemplate.Triggers>
 								<DataTrigger Binding="{Binding Device.CurrentConnectionMethod}" Value="Offline">
@@ -211,6 +211,62 @@
 					</DataGridTemplateColumn.CellTemplate>
 				</DataGridTemplateColumn>
 				<DataGridCheckBoxColumn Binding="{Binding IsRooted, Mode=OneWay}" Header="Rooted?" />
+				<DataGridTemplateColumn SortMemberPath="ScriptStatus">
+					<DataGridTemplateColumn.HeaderStyle>
+						<Style TargetType="DataGridColumnHeader">
+							<Setter Property="ToolTip" Value="Name and status of the script that ran against each device." />
+						</Style>
+					</DataGridTemplateColumn.HeaderStyle>
+					<DataGridTemplateColumn.CellTemplate>
+						<DataTemplate>
+							<Border CornerRadius="10" BorderThickness="2" Width="20" Height="20" Margin="2"
+									Name="circle">
+								<Border.ToolTip>
+									<Grid>
+										<Grid.RowDefinitions>
+											<RowDefinition />
+											<RowDefinition />
+										</Grid.RowDefinitions>
+										<Grid.ColumnDefinitions>
+											<ColumnDefinition />
+											<ColumnDefinition />
+										</Grid.ColumnDefinitions>
+										<Label Grid.Row="0" Grid.Column="0" Content="Status:" />
+										<Label Grid.Row="0" Grid.Column="1" Content="{Binding ScriptStatus}" TextBlock.FontWeight="Bold" />
+										<Label Grid.Row="1" Grid.Column="0" Content="Script:" />
+										<Label Grid.Row="1" Grid.Column="1" Content="{Binding ScriptName}" />
+									</Grid>
+								</Border.ToolTip>
+								<TextBlock Name="content" TextAlignment="Center" VerticalAlignment="Center" />
+							</Border>
+							<DataTemplate.Triggers>
+								<DataTrigger Binding="{Binding ScriptStatus}" Value="None">
+									<Setter TargetName="circle" Property="ToolTip" Value="No script is running against this device." />
+									<Setter TargetName="circle" Property="BorderBrush" Value="#BDBDBD" />
+									<Setter TargetName="circle" Property="BorderThickness" Value="1" />
+								</DataTrigger>
+								<DataTrigger Binding="{Binding ScriptStatus}" Value="Running">
+									<Setter TargetName="circle" Property="Background" Value="#E0E0E0" />
+									<Setter TargetName="circle" Property="BorderBrush" Value="#9E9E9E" />
+									<Setter TargetName="content" Property="Text" Value="…" />
+									<Setter TargetName="content" Property="Foreground" Value="Black" />
+								</DataTrigger>
+								<DataTrigger Binding="{Binding ScriptStatus}" Value="Success">
+									<Setter TargetName="circle" Property="Background" Value="#81C784" />
+									<Setter TargetName="circle" Property="BorderBrush" Value="#43A047" />
+									<Setter TargetName="content" Property="Text" Value="✓" />
+									<Setter TargetName="content" Property="Foreground" Value="#1B5E20" />
+								</DataTrigger>
+								<DataTrigger Binding="{Binding ScriptStatus}" Value="Failure">
+									<Setter TargetName="circle" Property="Background" Value="#E57373" />
+									<Setter TargetName="circle" Property="BorderBrush" Value="#E53935" />
+									<Setter TargetName="content" Property="Text" Value="✗" />
+									<Setter TargetName="content" Property="Foreground" Value="#760A0A" />
+								</DataTrigger>
+							</DataTemplate.Triggers>
+						</DataTemplate>
+					</DataGridTemplateColumn.CellTemplate>
+				</DataGridTemplateColumn>
 				<DataGridTemplateColumn SortMemberPath="Status" Header="Status">
 					<DataGridTemplateColumn.CellTemplate>
 						<DataTemplate>
