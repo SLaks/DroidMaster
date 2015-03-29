@@ -17,7 +17,7 @@
 			<local:InterfaceTemplateSelector x:Key="interfaceSelector" />
 			<BooleanToVisibilityConverter x:Key="boolToVisibility" />
 			<DataTemplate x:Key="logItemTemplate">
-				<Border BorderThickness="0 0 0 1" BorderBrush="DarkGray" Padding="0 0 0 2" Margin="0 0 0 2">
+				<Border BorderThickness="0 0 0 1" BorderBrush="DarkGray" Padding="4">
 					<ContentPresenter Content="{Binding}" ContentTemplateSelector="{StaticResource interfaceSelector}" />
 				</Border>
 			</DataTemplate>
@@ -29,8 +29,8 @@
 			</DataTemplate>
 			<DataTemplate DataType="{x:Type core:ICommandResult}">
 				<StackPanel>
-					<Label FontWeight="Bold" Content="{Binding CommandText}" />
-					<Label Content="{Binding Output}" />
+					<TextBlock FontWeight="Bold" Text="{Binding CommandText}" Margin="0 0 0 5" />
+					<TextBlock Text="{Binding Output}" />
 				</StackPanel>
 			</DataTemplate>
 		</ResourceDictionary>
@@ -221,7 +221,7 @@
 					</DataGridTemplateColumn.HeaderStyle>
 					<DataGridTemplateColumn.CellTemplate>
 						<DataTemplate>
-							<Border CornerRadius="10" BorderThickness="2" Width="20" Height="20" Margin="2"
+							<Border CornerRadius="10" BorderThickness="2" Width="20" Height="20" Margin="4 2"
 									Name="circle">
 								<Border.ToolTip>
 									<Grid>
@@ -295,7 +295,7 @@
 					SelectedValue="{Binding SelectedValue, ElementName=devices, Mode=OneWay}">
 			<TabControl.ItemTemplate>
 				<DataTemplate>
-					<Label Content="{Binding Device.LatestConnectionId}" />
+					<TextBlock Text="{Binding Device.LatestConnectionId}" />
 				</DataTemplate>
 			</TabControl.ItemTemplate>
 			<TabControl.ContentTemplate>

@@ -127,7 +127,7 @@ namespace DroidMaster.Core {
 					// This is only called synchronously, by the blocking
 					// Device.ExecuteShellCommand() method, so we have no
 					// threading issues.
-					output += string.Join(Environment.NewLine, lines);
+					Output += string.Join(Environment.NewLine, lines);
 				}
 			}
 		}
