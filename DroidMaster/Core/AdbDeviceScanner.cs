@@ -16,12 +16,13 @@ namespace DroidMaster.Core {
 		public override string DisplayName => "USB";
 
 		public override Task Scan() {
+			Device.DisableAutomaticInfoRetrieval = true;
 			return Task.Run(() => {
 				var discoveredDevices = AndroidDebugBridge.Instance.Devices;
-				var offline = discoveredDevices.Where(d => d.IsOffline);
+				var offline = discoveredDevices.Where(d => !d.IsOnline);
 				if (offline.Any()) {
 					LogError($"Skipping {offline.Count()} offline device{(offline.Skip(1).Any() ? "s" : "")} (which cannot be controlled)\r\n"
-						   + string.Join(", ", offline.Select(d => d.DeviceProperty)));
+						   + string.Join(", ", offline.Select(d => $"{d.SerialNumber}: {d.State}")));
 				}
 				var duplicates = discoveredDevices.GroupBy(d => d.DeviceProperty)
 												  .Where(g => g.Skip(1).Any());
