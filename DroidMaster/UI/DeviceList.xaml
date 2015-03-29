@@ -23,8 +23,8 @@
 			</DataTemplate>
 			<DataTemplate DataType="{x:Type models:ProgressModel}">
 				<DockPanel LastChildFill="True">
-					<Label DockPanel.Dock="Left" Content="{Binding Description}" />
-					<ProgressBar Maximum="1" Value="{Binding Progress}" />
+					<TextBlock DockPanel.Dock="Left" Text="{Binding Description}" Padding="0 5 5 5" />
+					<ProgressBar Maximum="1" Value="{Binding Progress}" MinWidth="50" />
 				</DockPanel>
 			</DataTemplate>
 			<DataTemplate DataType="{x:Type core:ICommandResult}">
