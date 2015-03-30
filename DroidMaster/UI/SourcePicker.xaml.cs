@@ -4,6 +4,7 @@ using System.Composition;
 using System.Globalization;
 using System.Linq;
 using System.Net;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -16,6 +17,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using DroidMaster.Core;
 using Microsoft.VisualStudio.ComponentModelHost;
+using Microsoft.Win32;
 using Nito.AsyncEx;
 using VSEmbed;
 
@@ -27,6 +29,7 @@ namespace DroidMaster.UI {
 		///<summary>Creates a SourceFilePicker.</summary>
 		public SourcePicker() {
 			InitializeComponent();
+			LoadSettings();
 		}
 
 		private async void OpenScript_Click(object sender, RoutedEventArgs e) {
@@ -77,8 +80,47 @@ namespace DroidMaster.UI {
 				return;
 			}
 
+			SaveSettings();
+
 			new DeviceList(sources).Show();
 		}
+
+		#region Stored Settings
+		const string SettingsKey = @"HKEY_CURRENT_USER\Software\SLaks\DroidMaster";
+		void SaveSettings() {
+			Registry.SetValue(SettingsKey, "Enable-ADB", enableAdb.IsChecked);
+			Registry.SetValue(SettingsKey, "Enable-SSH", enableSsh.IsChecked);
+
+			foreach (var property in typeof(SshDeviceScanner).GetProperties().Where(p => p.CanWrite)) {
+				var value = property.GetValue(enableSsh.DataContext);
+				if (property.Name == nameof(SshDeviceScanner.Password))
+					value = ProtectedData.Protect(Encoding.UTF8.GetBytes((string)value), null, DataProtectionScope.CurrentUser);
+				Registry.SetValue(SettingsKey, "SSH-" + property.Name, value);
+			}
+		}
+
+		void LoadSettings() {
+			try {
+				enableAdb.IsChecked = bool.Parse(Registry.GetValue(SettingsKey, "Enable-ADB", null)?.ToString() ?? "False");
+				enableSsh.IsChecked = bool.Parse(Registry.GetValue(SettingsKey, "Enable-SSH", null)?.ToString() ?? "False");
+
+				// Replacing the DataContext entirely is the best way to refresh the bindings
+				var newInstance = new SshDeviceScanner();
+				foreach (var property in typeof(SshDeviceScanner).GetProperties().Where(p => p.CanWrite)) {
+					var value = Registry.GetValue(SettingsKey, "SSH-" + property.Name, null) ?? "";
+					if (property.PropertyType == typeof(IPAddress))
+						value = IPAddress.Parse(value.ToString());
+					else if (property.Name == nameof(SshDeviceScanner.Password))
+						value = Encoding.UTF8.GetString(ProtectedData.Unprotect((byte[])value, null, DataProtectionScope.CurrentUser));
+					else
+						value = Convert.ChangeType(value, property.PropertyType);
+					property.SetValue(newInstance, value);
+				}
+				wifiGroup.DataContext = newInstance;
+				sshPassword.Password = newInstance.Password;	// Password is not bindable
+			} catch { }
+		}
+		#endregion
 	}
 
 	[Export]

@@ -21,7 +21,7 @@
 		<CheckBox Content="{Binding DisplayName}" Name="enableAdb" DataContext="{StaticResource adbSource}"
 				  ToolTip="Discover devices connected over USB, using ADB.  This requires that the devices has USB debugging enabled." 
 				  Margin="10" />
-		<GroupBox x:Name="wifiGroup" DataContext="{StaticResource sshSource}">
+		<GroupBox Name="wifiGroup" DataContext="{StaticResource sshSource}">
 			<GroupBox.Header>
 				<CheckBox Content="{Binding DisplayName}" Name="enableSsh" 
 						  ToolTip="Discover devices connected to your WiFi network, using SSH.  This requires that the devices have an SSH server running." />
