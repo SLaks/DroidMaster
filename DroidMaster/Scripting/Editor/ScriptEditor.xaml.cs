@@ -22,7 +22,7 @@ namespace DroidMaster.Scripting.Editor {
 		public ScriptEditor(ExportFactory<ScriptEditorViewModel> viewModelFactory) {
 			InitializeComponent();
 			DataContext = viewModel = viewModelFactory.CreateExport().Value;
-			viewModel.WorkspaceCreator.ScriptDirectory = Environment.CurrentDirectory;	// TODO: Change?
+			viewModel.WorkspaceCreator.ScriptDirectory = App.ScriptDirectory;
 			RefreshOpenMenu();
 		}
 

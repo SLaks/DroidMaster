@@ -56,10 +56,8 @@ namespace DroidMaster.UI {
 
 	#region Scripting
 	partial class DeviceListViewModel {
-		public static string ScriptDirectory { get; set; } = Environment.CurrentDirectory;
-
 		public IEnumerable<ScriptCommand> Scripts =>
-			Directory.EnumerateFiles(ScriptDirectory)
+			Directory.EnumerateFiles(App.ScriptDirectory)
 				.Where(s => !Path.GetFileName(s).StartsWith("_"))
 				.Where(s => WorkspaceCreator.LanguageExtensions.ContainsKey(Path.GetExtension(s)))
 				.Select(s => new ScriptCommand(this, s));
@@ -89,6 +87,7 @@ namespace DroidMaster.UI {
 			try {
 				var workspace = new RuntimeWorkspaceCreator { ScriptDirectory = Path.GetDirectoryName(scriptFile) };
 				script = await workspace.CompileScript(scriptFile);
+				Environment.CurrentDirectory = workspace.ScriptDirectory;
 			} catch (Exception ex) {
 				MessageBox.Show($"An error occurred while compiling {this}:\r\n{ex.Message}");
 				return;
