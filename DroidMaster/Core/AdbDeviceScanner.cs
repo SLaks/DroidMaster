@@ -24,7 +24,7 @@ namespace DroidMaster.Core {
 					LogError($"Skipping {offline.Count()} offline device{(offline.Skip(1).Any() ? "s" : "")} (which cannot be controlled)\r\n"
 						   + string.Join(", ", offline.Select(d => $"{d.SerialNumber}: {d.State}")));
 				}
-				var duplicates = discoveredDevices.GroupBy(d => d.DeviceProperty)
+				var duplicates = discoveredDevices.GroupBy(d => d.SerialNumber)
 												  .Where(g => g.Skip(1).Any());
 				if (duplicates.Any()) {
 					LogError("Skipping the following duplicate device IDs, which ADB cannot control:"
@@ -57,17 +57,21 @@ namespace DroidMaster.Core {
 			}
 
 			public Task PullFileAsync(string localPath, string devicePath, CancellationToken token = default(CancellationToken), IProgress<double> progress = null) {
-				return Task.Run(() => Device.SyncService.PullFile(
+				return Task.Run(() => AssertResult(Device.SyncService.PullFile(
 					Device.FileListingService.FindFileEntry(devicePath),
 					localPath,
 					CreateMonitor(token, progress)
-				));
+				)));
 			}
 			public Task PushFileAsync(string localPath, string devicePath, CancellationToken token = default(CancellationToken), IProgress<double> progress = null) {
-				return Task.Run(() => Device.SyncService.PushFile(localPath, devicePath, CreateMonitor(token, progress)));
+				return Task.Run(() => AssertResult(Device.SyncService.PushFile(localPath, devicePath, CreateMonitor(token, progress))));
 			}
 			static ISyncProgressMonitor CreateMonitor(CancellationToken token, IProgress<double> progress) {
 				return progress != null ? new ProgressAdapter(token, progress) : (ISyncProgressMonitor)new NullSyncProgressMonitor();
+			}
+			static void AssertResult(SyncResult result) {
+				if (result.Code != ErrorCodeHelper.RESULT_OK)
+					throw new Exception(result.Message);
 			}
 
 			public ICommandResult ExecuteShellCommand(string command) {
