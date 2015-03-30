@@ -134,14 +134,15 @@
 								</Grid.RowDefinitions>
 								<Border Width="6" Background="Black" />
 								<Border Width="12" Grid.Row="1" BorderBrush="Black" BorderThickness="2">
-									<ProgressBar Value="{Binding BatteryLevel, Mode=OneWay}" Orientation="Vertical" Name="bar" Foreground="{Binding BatteryColor}">
+									<ProgressBar Value="{Binding BatteryLevel, Mode=OneWay}" Orientation="Vertical" Name="bar" 
+												 Foreground="{Binding BatteryColor}" Background="White">
 										<ProgressBar.Template>
 											<ControlTemplate TargetType="{x:Type ProgressBar}">
 												<Grid x:Name="TemplateRoot">
 													<Grid.LayoutTransform>
 														<RotateTransform Angle="-90"/>
 													</Grid.LayoutTransform>
-													<Rectangle x:Name="PART_Track"/>
+													<Rectangle x:Name="PART_Track" Fill="{TemplateBinding Background}" />
 													<Grid x:Name="PART_Indicator" ClipToBounds="True" HorizontalAlignment="Left">
 														<Rectangle x:Name="Indicator" Fill="{TemplateBinding Foreground}"/>
 													</Grid>
