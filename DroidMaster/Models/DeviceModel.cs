@@ -63,7 +63,7 @@ namespace DroidMaster.Models {
 			var model = new ProgressModel("Pulling " + Path.GetFileName(localPath));
 			Status = model;
 			Log(model);
-			return Device.PushFileAsync(devicePath, localPath, progress: model);
+			return Device.PullFileAsync(devicePath, localPath, progress: model);
 		}
 
 		///<summary>Reboots the device.</summary>
@@ -86,10 +86,10 @@ namespace DroidMaster.Models {
 		}
 
 		///<summary>Copies a file from the device to the local computer, as root.</summary>
-		public async Task PullFileAsRoot(string localPath, string devicePath) {
+		public async Task PullFileAsRoot(string devicePath, string localPath) {
 			var tempPath = TempPath + Guid.NewGuid();
-			await Device.ExecuteShellCommand($"su -c cp \"{devicePath}\" {tempPath}").Complete;
-			await PushFile(localPath, tempPath);
+			await Device.ExecuteShellCommand($"su -c cp \"{devicePath}\" {tempPath} && su -c chmod 666 {tempPath}").Complete;
+			await PullFile(tempPath, localPath);
 			await Device.ExecuteShellCommand($"rm {tempPath}").Complete;
 		}
 

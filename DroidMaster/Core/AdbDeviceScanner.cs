@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Managed.Adb;
+using Managed.Adb.IO;
 
 namespace DroidMaster.Core {
 	class AdbDeviceScanner : DeviceScanner {
@@ -56,9 +57,15 @@ namespace DroidMaster.Core {
 				return Task.Run(new Action(Device.Reboot));
 			}
 
-			public Task PullFileAsync(string localPath, string devicePath, CancellationToken token = default(CancellationToken), IProgress<double> progress = null) {
+			public Task PullFileAsync(string devicePath, string localPath, CancellationToken token = default(CancellationToken), IProgress<double> progress = null) {
 				return Task.Run(() => AssertResult(Device.SyncService.PullFile(
-					Device.FileListingService.FindFileEntry(devicePath),
+					// FindFileEntry(string) will recursively ls the parent
+					// directories, throwing errors within /data/local/tmp.
+					// Instead, I explicitly create an entry for the parent
+					// directory, and find the file in that.
+					Device.FileListingService.FindFileEntry(
+						FileEntry.CreateNoPermissions(Device, LinuxPath.GetDirectoryName(devicePath)), devicePath
+					),
 					localPath,
 					CreateMonitor(token, progress)
 				)));
