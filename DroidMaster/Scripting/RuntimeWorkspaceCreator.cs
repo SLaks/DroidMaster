@@ -58,6 +58,9 @@ namespace DroidMaster.Scripting {
 				.Concat(new[] { CreateScriptProject(scriptFile) })
 				.Select(p => LoadProject(p, cancellationToken))
 			).ConfigureAwait(false);
+
+			AppDomain.CurrentDomain.AssemblyResolve += (s, e) => assemblies.FirstOrDefault(a => a.FullName == e.Name);
+
 			var scriptType = assemblies.Last().GetType("Script");
 			return (DeviceScript)Delegate.CreateDelegate(typeof(DeviceScript), scriptType, "Run");
 		}
