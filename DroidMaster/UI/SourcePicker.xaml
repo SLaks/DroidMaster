@@ -39,16 +39,16 @@
 					<RowDefinition />
 				</Grid.RowDefinitions>
 				<Label   Grid.Row="0" Content="Start IP" />
-				<TextBox Grid.Row="0" Grid.Column="1" Text="{Binding StartAddress, Converter={StaticResource ipConverter}}" />
+				<TextBox Grid.Row="0" Grid.Column="1" Text="{Binding StartAddress, Converter={StaticResource ipConverter}, UpdateSourceTrigger=PropertyChanged}" />
 
 				<Label   Grid.Row="1" Content="End IP" />
-				<TextBox Grid.Row="1" Grid.Column="1" Text="{Binding EndAddress, Converter={StaticResource ipConverter}}" />
+				<TextBox Grid.Row="1" Grid.Column="1" Text="{Binding EndAddress, Converter={StaticResource ipConverter}, UpdateSourceTrigger=PropertyChanged}" />
 
 				<Label   Grid.Row="2" Content="Port" />
-				<TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Port}" />
+				<TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Port, UpdateSourceTrigger=PropertyChanged}" />
 
 				<Label   Grid.Row="3" Content="User name" />
-				<TextBox Grid.Row="3" Grid.Column="1" Text="{Binding UserName}" />
+				<TextBox Grid.Row="3" Grid.Column="1" Text="{Binding UserName, UpdateSourceTrigger=PropertyChanged}" />
 
 				<Label   Grid.Row="4" Content="Password" />
 				<PasswordBox Grid.Row="4" Grid.Column="1" Name="sshPassword" />

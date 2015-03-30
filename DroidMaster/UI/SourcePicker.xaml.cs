@@ -93,8 +93,10 @@ namespace DroidMaster.UI {
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
-			if (value != null && targetType == typeof(IPAddress))
-				return IPAddress.Parse(value.ToString());
+			try {
+				if (value != null && targetType == typeof(IPAddress))
+					return IPAddress.Parse(value.ToString());
+			} catch (FormatException) { }
 			return value;
 		}
 	}
