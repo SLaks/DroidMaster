@@ -27,10 +27,10 @@ namespace DroidMaster.Core {
 			if (StartAddress == null) builder.AppendLine("Please enter a start IP address to scan for devices.");
 			if (EndAddress == null) builder.AppendLine("Please enter an end IP address to scan for devices.");
 			if (StartAddress != null && EndAddress != null
-			 && new BigInteger(StartAddress.GetAddressBytes()) > new BigInteger(EndAddress.GetAddressBytes()))
+			 && new BigInteger(StartAddress.GetAddressBytes().Reverse().ToArray()) > new BigInteger(EndAddress.GetAddressBytes().Reverse().ToArray()))
 				builder.AppendLine("The start IP address must not be after the end IP address.");
 			if (string.IsNullOrWhiteSpace(UserName) || string.IsNullOrWhiteSpace(Password))
-				builder.AppendLine("Please ener a username and password to authenticate to the SSH servers");
+				builder.AppendLine("Please enter a username and password to authenticate to the SSH servers");
 			var result = builder.ToString().Trim();
 			return string.IsNullOrEmpty(result) ? null : result;
 		}
@@ -53,9 +53,9 @@ namespace DroidMaster.Core {
 		public override Task ScanFor(string connectionId) => TryConnect(connectionId);
 
 		IEnumerable<IPAddress> GetAddresses() {
-			var end = new BigInteger(EndAddress.GetAddressBytes());
-			for (var address = new BigInteger(StartAddress.GetAddressBytes()); address <= end; address++) {
-				yield return new IPAddress(address.ToByteArray());
+			var end = new BigInteger(EndAddress.GetAddressBytes().Reverse().ToArray());
+			for (var address = new BigInteger(StartAddress.GetAddressBytes().Reverse().ToArray()); address <= end; address++) {
+				yield return new IPAddress(address.ToByteArray().Reverse().ToArray());
 			}
 		}
 
