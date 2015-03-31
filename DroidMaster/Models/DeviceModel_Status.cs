@@ -9,16 +9,31 @@ using System.Threading.Tasks;
 namespace DroidMaster.Models {
 	partial class DeviceModel {
 		private static readonly Regex batteryRegex = new Regex(@"  level: (\d+)");
+		private static readonly Regex fallbackBatteryRegex = new Regex(@"POWER_SUPPLY_CAPACITY=(\d+)");
 		private static readonly Regex powerSourceRegex = new Regex(@"([A-Za-z][A-Za-z ]+) powered: true");
 
 		///<summary>Refreshes status properties (eg, battery, screen state) from the device.</summary>
 		public async Task Refresh() {
 			try {
 				var output = await Device.ExecuteShellCommand("dumpsys battery && dumpsys input_method").Complete;
-				IsScreenOn = output.Contains("mScreenOn=true");
 
-				BatteryLevel = int.Parse(batteryRegex.Match(output).Groups[1].Value);
-				PowerSources = string.Join(", ", powerSourceRegex.Matches(output).Cast<Match>().Select(m => m.Groups[1]));
+				try {
+					if (output.StartsWith("Permission Denial"))	// Some SSH server apps have no permission for this
+						output = await Device.ExecuteShellCommand("su -c dumpsys battery && su -c dumpsys input_method").Complete;
+				} catch (FileNotFoundException) {
+					Log("Can't read power/screen status without root or permission:\r\n" + output);
+					output = await Device.ExecuteShellCommand("cat /sys/class/power_supply/battery/uevent").Complete;
+					BatteryLevel = int.Parse(fallbackBatteryRegex.Match(output).Groups[1].Value);
+
+					output = null;
+				}
+
+				if (output != null) {
+					IsScreenOn = output.Contains("mScreenOn=true");
+
+					BatteryLevel = int.Parse(batteryRegex.Match(output).Groups[1].Value);
+					PowerSources = string.Join(", ", powerSourceRegex.Matches(output).Cast<Match>().Select(m => m.Groups[1]));
+				}
 
 				try {
 					IsRooted = (await Device.ExecuteShellCommand("su -c echo BLAH").Complete).Contains("BLAH");
