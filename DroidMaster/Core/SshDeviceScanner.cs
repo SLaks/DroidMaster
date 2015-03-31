@@ -46,7 +46,7 @@ namespace DroidMaster.Core {
 
 				OnDeviceDiscovered(new DataEventArgs<IDeviceConnection>(new SshDeviceConnection(this, client)));
 			} catch (Exception ex) {
-				LogError(ex.Message);
+				LogError($"An error occurred while connecting to {a}:\r\n{ex.Message}");
 			}
 		}
 
@@ -62,11 +62,12 @@ namespace DroidMaster.Core {
 		class SshDeviceConnection : IDeviceConnection {
 			public SshClient Client { get; }
 			public DeviceScanner Owner { get; }
-			public string ConnectionId => Client.ConnectionInfo.Host;
+			public string ConnectionId { get; }
 
 			public SshDeviceConnection(SshDeviceScanner owner, SshClient client) {
 				Client = client;
 				Owner = owner;
+				ConnectionId = Client.ConnectionInfo.Host;	// This will throw after the connection is closed.
 			}
 
 			public async Task RebootAsync() {
@@ -114,16 +115,29 @@ namespace DroidMaster.Core {
 					nameof(SshCommand.ExtendedOutputStream)
 				}
 					.Select(typeof(SshCommand).GetProperty)
-					.Select(p => (Action<SshCommand, Stream>)Delegate.CreateDelegate(typeof(Action<SshCommand, Stream>), p.GetMethod))
+					.Select(p => (Action<SshCommand, Stream>)Delegate.CreateDelegate(typeof(Action<SshCommand, Stream>), p.SetMethod))
 					.ToList();
 
 				public async Task<string> Execute(SshCommand command) {
 					CommandText = command.CommandText;
-					var task = Task.Factory.FromAsync(command.BeginExecute, command.EndExecute, null);
-					foreach (var setter in StreamPropertySetters) {
-						setter(command, this);
-					}
+					// BeginExecute opens the channel synchronously, so we need
+					// to run it in a background thread.
+					var task = Task.Run(() => {
+						var innerTask = Task.Factory.FromAsync(command.BeginExecute, command.EndExecute, null);
+						// We must wait for BeginExecute to finish to overwrite
+						// the Stream properties which are set in CreateChannel
+						foreach (var setter in StreamPropertySetters) {
+							setter(command, this);
+						}
+						return innerTask;
+					});
 					await task.ConfigureAwait(false);
+					// https://play.google.com/store/apps/details?id=berserker.android.apps.sshdroid appends a trailing \n to every response
+					if (Output == null)
+						output = "";
+					else if (Output.EndsWith("\n"))
+						output = Output.Remove(Output.Length - 1);
+					OnPropertyChanged(nameof(Output));
 					return Output;
 				}
 
@@ -157,7 +171,7 @@ namespace DroidMaster.Core {
 
 				public override bool CanWrite => true;
 
-				public override long Length { get { throw new NotImplementedException(); } }
+				public override long Length { get { return 0; } }	// Called by Execute()
 
 				public override long Position {
 					get { throw new NotImplementedException(); }
