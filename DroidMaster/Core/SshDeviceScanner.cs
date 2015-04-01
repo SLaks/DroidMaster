@@ -14,6 +14,13 @@ using Renci.SshNet.Common;
 
 namespace DroidMaster.Core {
 	class SshDeviceScanner : DeviceScanner {
+		static SshDeviceScanner() {
+			// SshNet uses this semaphore to prevent too many simultaneous connections.
+			// That's the exact opposite of the behavior I want.
+			typeof(Session).GetField("AuthenticationConnection", BindingFlags.NonPublic | BindingFlags.Static)
+						   .SetValue(null, new SemaphoreLight(100));
+		}
+
 		public override string DisplayName => "Wi-Fi";
 		public IPAddress StartAddress { get; set; }
 		public IPAddress EndAddress { get; set; }
