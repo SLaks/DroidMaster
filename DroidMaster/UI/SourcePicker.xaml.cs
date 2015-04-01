@@ -95,7 +95,8 @@ namespace DroidMaster.UI {
 				var value = property.GetValue(enableSsh.DataContext);
 				if (property.Name == nameof(SshDeviceScanner.Password))
 					value = ProtectedData.Protect(Encoding.UTF8.GetBytes((string)value), null, DataProtectionScope.CurrentUser);
-				Registry.SetValue(SettingsKey, "SSH-" + property.Name, value);
+				if (value != null)
+					Registry.SetValue(SettingsKey, "SSH-" + property.Name, value);
 			}
 		}
 
