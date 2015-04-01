@@ -12,11 +12,11 @@ namespace DroidMaster.UI {
 	partial class DeviceListViewModel {
 		[Obsolete("This constructor should only be called by the designer.", error: true)]
 		public DeviceListViewModel() {
-			Devices.Add(new DeviceViewModel(new PersistentDevice("A", new DesignerDevice(new AdbDeviceScanner(), "AC123DEADB33F"))));
-			Devices.Add(new DeviceViewModel(new PersistentDevice("B", new DesignerDevice(new SshDeviceScanner(), "192.168.1.217"))));
-			Devices.Add(new DeviceViewModel(new PersistentDevice("C", new DesignerDevice(new AdbDeviceScanner(), "4829AD254FE76"))));
-			Devices.Add(new DeviceViewModel(new PersistentDevice("D", new DesignerDevice(new SshDeviceScanner(), "192.168.1.187"))));
-			Devices.Add(new DeviceViewModel(new PersistentDevice("E", new DesignerDevice(new SshDeviceScanner(), "192.168.1.225"))));
+			ActiveDevices.Add(new DeviceViewModel(new PersistentDevice("A", new DesignerDevice(new AdbDeviceScanner(), "AC123DEADB33F"))));
+			ActiveDevices.Add(new DeviceViewModel(new PersistentDevice("B", new DesignerDevice(new SshDeviceScanner(), "192.168.1.217"))));
+			ActiveDevices.Add(new DeviceViewModel(new PersistentDevice("C", new DesignerDevice(new AdbDeviceScanner(), "4829AD254FE76"))));
+			ActiveDevices.Add(new DeviceViewModel(new PersistentDevice("D", new DesignerDevice(new SshDeviceScanner(), "192.168.1.187"))));
+			ActiveDevices.Add(new DeviceViewModel(new PersistentDevice("E", new DesignerDevice(new SshDeviceScanner(), "192.168.1.225"))));
 
 			SetDesignerProperty(0, nameof(DeviceModel.BatteryLevel), 78);
 			SetDesignerProperty(1, nameof(DeviceModel.BatteryLevel), 27);
@@ -32,17 +32,17 @@ namespace DroidMaster.UI {
 			SetDesignerProperty(0, nameof(DeviceModel.IsWiFiEnabled), true);
 			SetDesignerProperty(2, nameof(DeviceModel.IsWiFiEnabled), true);
 
-			Devices[0].ScriptStatus = ScriptStatus.None;
-			Devices[1].ScriptStatus = ScriptStatus.Running;
-			Devices[2].ScriptStatus = ScriptStatus.Success;
-			Devices[3].ScriptStatus = ScriptStatus.Failure;
-			Devices[4].ScriptStatus = ScriptStatus.Cancelled;
+			ActiveDevices[0].ScriptStatus = ScriptStatus.None;
+			ActiveDevices[1].ScriptStatus = ScriptStatus.Running;
+			ActiveDevices[2].ScriptStatus = ScriptStatus.Success;
+			ActiveDevices[3].ScriptStatus = ScriptStatus.Failure;
+			ActiveDevices[4].ScriptStatus = ScriptStatus.Cancelled;
 
-			Devices.Last().Reboot();
+			ActiveDevices.Last().Reboot();
 		}
 
 		void SetDesignerProperty(int index, string property, object value)
-			=> typeof(DeviceModel).GetProperty(property).SetValue(Devices[index], value);
+			=> typeof(DeviceModel).GetProperty(property).SetValue(ActiveDevices[index], value);
 
 		class DesignerDevice : IDeviceConnection {
 			public DesignerDevice(DeviceScanner type, string id) {

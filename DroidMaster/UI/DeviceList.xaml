@@ -67,8 +67,11 @@
 			</Menu>
 			<Button Content="Cancel" ToolTip="Cancels any scripts that are still running on the selected devices."
 					Command="{Binding CancelScriptsCommand}" CommandParameter="{Binding SelectedItems, ElementName=devices}" />
+			<Separator />
+			<Button Content="Hide Disconnected Devices" ToolTip="Removes all disconnected devices from the grid.  If any of the devices come back online, they will reappear in the grid."
+					Command="{Binding HideDisconnectedCommand}" />
 		</ToolBar>
-		<DataGrid Grid.Row="1" ItemsSource="{Binding Devices}" Name="devices" 
+		<DataGrid Grid.Row="1" ItemsSource="{Binding ActiveDevices}" Name="devices" 
 				  HeadersVisibility="Column" HorizontalGridLinesBrush="#DDD" GridLinesVisibility="Horizontal" 
 				  IsReadOnly="True" AutoGenerateColumns="False">
 			<DataGrid.CellStyle>

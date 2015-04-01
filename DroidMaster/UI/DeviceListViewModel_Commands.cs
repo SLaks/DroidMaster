@@ -15,7 +15,7 @@ namespace DroidMaster.UI {
 			await Task.WhenAll(new[] { RefreshManager() }.Concat(
 				// All offline devices should already have a pending refresh from
 				// their refresh loop, so there is no need to queue a second one.
-				Devices.Where(d => d.IsOnline).Select(d => d.Refresh())
+				ActiveDevices.Where(d => d.IsOnline).Select(d => d.Refresh())
 			));
 		});
 
@@ -37,6 +37,12 @@ namespace DroidMaster.UI {
 			await d.Refresh();
 			if (!d.IsScreenOn)
 				await d.ToggleScreen();
+		});
+
+		public ICommand HideDisconnectedCommand => new ActionCommand(() => {
+			for (int i = ActiveDevices.Count - 1; i >= 0; i--)
+				if (!ActiveDevices[i].IsOnline)
+					ActiveDevices.RemoveAt(i);
 		});
 	}
 
@@ -94,7 +100,7 @@ namespace DroidMaster.UI {
 			}
 
 			// First, clear the Finished/Failed status from any earlier scripts, for a clean grid.
-			foreach (var device in deviceListViewModel.Devices) {
+			foreach (var device in deviceListViewModel.AllDevices) {
 				// This method will wait for any executing scripts to finish
 				// before clearing the status. Do not await its task; I want
 				// to start running scripts against other devices ASAP.

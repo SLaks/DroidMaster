@@ -22,8 +22,11 @@ namespace DroidMaster.UI {
 		}
 
 		private readonly Core.PersistentDeviceManager deviceManager;
+		///<summary>Holds every device ever discovered.</summary>
+		internal List<DeviceViewModel> AllDevices { get; } = new List<DeviceViewModel>();
 
-		public ObservableCollection<DeviceViewModel> Devices { get; } = new ObservableCollection<DeviceViewModel>();
+		///<summary>Gets the devices to display in the grid, excluding stale disconnected devices.</summary>
+		public ObservableCollection<DeviceViewModel> ActiveDevices { get; } = new ObservableCollection<DeviceViewModel>();
 		public ObservableCollection<string> DiscoveryErrors { get; } = new ObservableCollection<string>();
 
 		public CancellationToken Stop { get; }
@@ -49,7 +52,13 @@ namespace DroidMaster.UI {
 
 		async void OnDeviceAdded(Core.PersistentDevice device) {
 			var model = new DeviceViewModel(device);
-			Devices.Add(model);
+			AllDevices.Add(model);
+			ActiveDevices.Add(model);
+			// When a hidden device is reconnected, re-add it to the grid.
+			model.Device.ConnectionEstablished += delegate {
+				if (!ActiveDevices.Contains(model))
+					ActiveDevices.Add(model);
+			};
 
 			while (!Stop.IsCancellationRequested) {
 				await model.Refresh();
@@ -65,7 +74,7 @@ namespace DroidMaster.UI {
 		///<param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
 		protected virtual void Dispose(bool disposing) {
 			if (disposing) {
-				foreach (var device in Devices)
+				foreach (var device in AllDevices)
 					device.Device.Dispose();
 			}
 		}
