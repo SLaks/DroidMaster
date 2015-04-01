@@ -107,8 +107,9 @@ namespace DroidMaster.UI {
 				device.ClearScriptStatus().ToString();
 			}
 
+			var context = new ScriptContext();
 			var selectedDevices = ((IEnumerable)parameter).Cast<DeviceViewModel>();
-			await DeviceListViewModel.EachDevice(selectedDevices, d => d.RunScript(script, ToString()));
+			await DeviceListViewModel.EachDevice(selectedDevices, d => d.RunScript(script, context, ToString()));
 		}
 	}
 	#endregion

@@ -15,7 +15,7 @@ namespace DroidMaster.Scripting {
 		static readonly IReadOnlyCollection<string> StandardNamespaces = new[] {
 			"System", "System.Collections.Generic", "System.IO", "System.Linq", "System.Text",
 			"System.Threading", "System.Threading.Tasks", "System.Xml.Linq",
-			"DroidMaster", "DroidMaster.Models"
+			"DroidMaster", "DroidMaster.Models", "DroidMaster.UI"
 		};
 
 		static IReadOnlyCollection<string> FrameworkReferences = new[] {
@@ -52,13 +52,13 @@ namespace DroidMaster.Scripting {
 				string.Concat(StandardNamespaces.Select(n => $"using {n};\r\n"))
 			  + "\r\nusing static ReferenceCS;\r\n"
 			  + "\r\nusing static ReferenceVB;\r\n"
-			  + "\r\npublic static async Task Run(DeviceModel device, CancellationToken cancellationToken) {\r\n",
+			  + "\r\npublic static async Task Run(DeviceModel device, ScriptContext context, CancellationToken cancellationToken) {\r\n",
 				"\r\n}"	// We append a constant field initialized to the path, following this hard-coded documentation comment.
 			  + "\r\n///<summary>Gets the full path to the directory containing the script, including the trailing \\.</summary>") },
 			{ LanguageNames.VisualBasic, Tuple.Create(
 				string.Concat(StandardNamespaces.Select(n => $"Imports {n}\r\n"))
 			  + "\r\nImports ReferenceCS\r\n"	// ReferenceVB is a module, so we don't need to import it
-			  + "\r\nPublic Shared Async Function Run(device As DeviceModel, cancellationToken As CancellationToken) As Task\r\n",
+			  + "\r\nPublic Shared Async Function Run(device As DeviceModel, context As ScriptContext, cancellationToken As CancellationToken) As Task\r\n",
 				"\r\nEnd Function"
 			  + "\r\n'''<summary>Gets the full path to the directory containing the script, including the trailing \\.</summary>") }
 		};

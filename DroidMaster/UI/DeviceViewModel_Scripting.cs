@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using DroidMaster.Models;
 using DroidMaster.Scripting;
+using Microsoft.Win32;
 using Nito.AsyncEx;
 
 namespace DroidMaster.UI {
@@ -38,7 +39,7 @@ namespace DroidMaster.UI {
 		}
 
 		///<summary>Runs the specified script against the device, updating the script status properties as necessary.</summary>
-		public async Task RunScript(DeviceScript script, string name) {
+		public async Task RunScript(DeviceScript script, ScriptContext context, string name) {
 			using (await scriptLock.LockAsync()) {
 				ScriptStatus = ScriptStatus.Running;
 				ScriptName = name;
@@ -46,7 +47,7 @@ namespace DroidMaster.UI {
 				Log($"Running script {name}...");
 
 				try {
-					await script(this, Device.CancellationToken.Token);
+					await script(this, context, Device.CancellationToken.Token);
 					ScriptStatus = ScriptStatus.Success;
 				} catch (TaskCanceledException) {
 					ScriptStatus = ScriptStatus.Cancelled;
@@ -74,5 +75,32 @@ namespace DroidMaster.UI {
 		Failure,
 		///<summary>The script was cancelled by the user.</summary>
 		Cancelled
+	}
+
+	///<summary>An object that is shared among all instances of a script running against multiple devices, allowing user prompts to happen just once.</summary>
+	public class ScriptContext {
+		readonly Dictionary<string, object> globalValues = new Dictionary<string, object>();
+
+		///<summary>Computes a global value, exactly once per script execution.  All devices will share the same value.</summary>
+		/// <param name="key">The key of the value to compute.  This must be a unique string; it's used to link calls across devices.</param>
+		/// <param name="initializer">The function to compute the initial value.  This will be called exactly once, by the first script calling this method; all other calls will return the same result.</param>
+		public T GlobalValue<T>(string key, Func<T> initializer) {
+			object value;
+			if (globalValues.TryGetValue(key, out value))
+				return (T)value;
+			var result = initializer();
+			globalValues[key] = result;
+			return result;
+		}
+
+		///<summary>Prompts the user to select a file, once per batch of devices.</summary>
+		public string PickFile(string title, string filter) {
+			return GlobalValue(title, () => {
+				var dialog = new OpenFileDialog { Title = title, Filter = filter };
+				if (dialog.ShowDialog() != true)
+					return null;
+				return dialog.FileName;
+			});
+		}
 	}
 }
