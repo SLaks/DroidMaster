@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
@@ -19,7 +21,20 @@ namespace DroidMaster.Core {
 		public override Task Scan() {
 			Device.DisableAutomaticInfoRetrieval = true;
 			return Task.Run(() => {
-				var discoveredDevices = AndroidDebugBridge.Instance.Devices;
+				IEnumerable<Device> discoveredDevices;
+				try {
+					discoveredDevices = AndroidDebugBridge.Instance.Devices;
+				} catch (SocketException) {
+					try {
+						var process = Process.Start("adb.exe", "start-server");
+						LogError("Starting ADB server...");
+						process.WaitForExit();
+					} catch (Win32Exception ex) {
+						LogError("Could not start adb.exe: " + ex.Message);
+                        return;
+					}
+					discoveredDevices = AndroidDebugBridge.Instance.Devices;
+				}
 				var offline = discoveredDevices.Where(d => !d.IsOnline);
 				if (offline.Any()) {
 					LogError($"Skipping {offline.Count()} offline device{(offline.Skip(1).Any() ? "s" : "")} (which cannot be controlled)\r\n"
