@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using DroidMaster.Models;
 using DroidMaster.Scripting;
 using Microsoft.Win32;
@@ -94,12 +95,24 @@ namespace DroidMaster.UI {
 		}
 
 		///<summary>Prompts the user to select a file, once per batch of devices.</summary>
+		/// <param name="title">The title of the dialog.  This is also used as the global context key, and must be unique.</param>
+		/// <param name="filter">The options for the file type, separated by | characters.</param>
 		public string PickFile(string title, string filter) {
 			return GlobalValue(title, () => {
-				var dialog = new OpenFileDialog { Title = title, Filter = filter };
+				var dialog = new Microsoft.Win32.OpenFileDialog { Title = title, Filter = filter };
 				if (dialog.ShowDialog() != true)
 					return null;
 				return dialog.FileName;
+			});
+		}
+		///<summary>Prompts the user to select a directory, once per batch of devices.</summary>
+		/// <param name="title">The description of the dialog.  This is also used as the global context key, and must be unique.</param>
+		public string PickFolder(string title) {
+			return GlobalValue(title, () => {
+				var dialog = new FolderBrowserDialog { Description = title };
+				if (dialog.ShowDialog() == DialogResult.Cancel)
+					return null;
+				return dialog.SelectedPath;
 			});
 		}
 	}
