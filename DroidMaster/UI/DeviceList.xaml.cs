@@ -27,6 +27,16 @@ namespace DroidMaster.UI {
 			viewModel.Dispose();
 			onClosed.Cancel();
 		}
+
+		private void ScriptMenu_Click(object sender, RoutedEventArgs e) {
+			scriptMenu.GetBindingExpression(ItemsControl.ItemsSourceProperty).UpdateTarget();
+			if (!viewModel.Scripts.Any())
+				MessageBox.Show($"There are no scripts in {App.ScriptDirectory}.\r\nCreate .cs or .vb files there to run device scripts.  If Visual Studio 2015 is installed, click Open Script Editor for an IDE.");
+		}
+
+		private void ScriptMenu_SubmenuOpened(object sender, RoutedEventArgs e) {
+			scriptMenu.GetBindingExpression(ItemsControl.ItemsSourceProperty).UpdateTarget();
+		}
 	}
 
 	/// <summary>

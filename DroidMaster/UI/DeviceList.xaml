@@ -56,7 +56,8 @@
 					<MenuItem Header="Turn all screens off"	Command="{Binding ScreensOffCommand}"		CommandParameter="{Binding SelectedItems, ElementName=devices}" />
 					<MenuItem Header="Toggle all screens"	Command="{Binding ToggleScreensCommand}"	CommandParameter="{Binding SelectedItems, ElementName=devices}" />
 				</MenuItem>
-				<MenuItem Header="Run Script ▾" ItemsSource="{Binding Scripts}">
+				<MenuItem Header="Run Script ▾" ItemsSource="{Binding Scripts}"
+						  Name="scriptMenu" Click="ScriptMenu_Click" SubmenuOpened="ScriptMenu_SubmenuOpened">
 					<MenuItem.ItemContainerStyle>
 						<Style TargetType="MenuItem">
 							<Setter Property="Command" Value="{Binding}" />
