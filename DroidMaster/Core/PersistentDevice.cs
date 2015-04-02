@@ -128,6 +128,8 @@ namespace DroidMaster.Core {
 						HandleConnectionError(currentSource, ex);
 					} catch (SshConnectionException ex) {
 						HandleConnectionError(currentSource, ex);
+					} catch (ObjectDisposedException ex) {	// SshClients seem to occasionally get stuck and dispose themselves.
+						HandleConnectionError(currentSource, ex);
 					} catch (ProxyException ex) {
 						HandleConnectionError(currentSource, ex);
 					}
