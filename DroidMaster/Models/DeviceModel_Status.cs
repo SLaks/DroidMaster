@@ -29,7 +29,7 @@ namespace DroidMaster.Models {
 				}
 
 				if (output != null) {
-					IsScreenOn = output.Contains("mScreenOn=true");
+					IsScreenOn = output.Contains("mScreenOn=true") || output.Contains("mInteractive=true"); 
 
 					BatteryLevel = int.Parse(batteryRegex.Match(output).Groups[1].Value);
 					PowerSources = string.Join(", ", powerSourceRegex.Matches(output).Cast<Match>().Select(m => m.Groups[1]));
