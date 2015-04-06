@@ -30,7 +30,13 @@ namespace DroidMaster.Models {
 		///<summary>Gets or sets a WPF-bindable short status model object (eg, a string or a <see cref="ProgressModel"/>) to display in the grid.</summary>
 		public object Status {
 			get { return status; }
-			set { status = value; OnPropertyChanged(); }
+			set {
+				if (Status is AggregateProgressModel && value != null) {
+					return;
+				}
+				status = value;
+				OnPropertyChanged();
+			}
 		}
 
 		///<summary>Gets a collection of WPF-bindable objects containing output from script commands.</summary>

@@ -60,6 +60,7 @@ namespace DroidMaster.UI {
 					Log($"An error occurred while running {name}:\r\n{ex}");
 				}
 				Device.CancellationToken = null;
+				(Status as AggregateProgressModel)?.Dispose();	// Don't leak progress suppression
 			}
 		}
 	}

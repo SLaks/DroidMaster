@@ -154,6 +154,7 @@
     </ApplicationDefinition>
     <Compile Include="Commands.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="Models\AggregateProgressModel.cs" />
     <Compile Include="Models\DeviceModel_Status.cs" />
     <Compile Include="Scripting\Editor\EditorWorkspaceCreator.cs" />
     <Compile Include="Scripting\Editor\ScriptEditor.xaml.cs">
