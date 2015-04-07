@@ -82,13 +82,13 @@ namespace DroidMaster.Core {
 				}
 			}
 		}
-		
+
 		// ADB has no concept of searching for a single device ID.
 		public override Task ScanFor(string connectionId) => Scan();
 
 		sealed class AdbDeviceConnection : IDeviceConnection {
 			// ADB chokes on too much parallel activity
-			readonly SemaphoreSlim semaphore = new SemaphoreSlim(4);
+			readonly SemaphoreSlim semaphore = new SemaphoreSlim(8);
 
 			Device Device { get; }
 			public DeviceScanner Owner { get; }
@@ -105,7 +105,8 @@ namespace DroidMaster.Core {
 
 			public async Task PullFileAsync(string devicePath, string localPath, CancellationToken token = default(CancellationToken), IProgress<double> progress = null) {
 				using (await semaphore.DisposableWaitAsync().ConfigureAwait(false))
-					await Task.Run(() => AssertResult(Device.SyncService.PullFile(
+				using (var syncService = new SyncService(Device))
+					await Task.Run(() => AssertResult(syncService.PullFile(
 					// FindFileEntry(string) will recursively ls the parent
 					// directories, throwing errors within /data/local/tmp.
 					// Instead, I explicitly create an entry for the parent
@@ -119,7 +120,9 @@ namespace DroidMaster.Core {
 			}
 			public async Task PushFileAsync(string localPath, string devicePath, CancellationToken token = default(CancellationToken), IProgress<double> progress = null) {
 				using (await semaphore.DisposableWaitAsync().ConfigureAwait(false))
-					await Task.Run(() => AssertResult(Device.SyncService.PushFile(localPath, devicePath, CreateMonitor(token, progress))));
+				using (var syncService = new SyncService(Device))
+					await Task.Run(() => AssertResult(syncService.PushFile(localPath, devicePath, CreateMonitor(token, progress))));
+
 			}
 			static ISyncProgressMonitor CreateMonitor(CancellationToken token, IProgress<double> progress) {
 				return progress != null ? new ProgressAdapter(token, progress) : (ISyncProgressMonitor)new NullSyncProgressMonitor();
@@ -128,6 +131,7 @@ namespace DroidMaster.Core {
 				switch (result.Code) {
 					case ErrorCodeHelper.RESULT_OK:
 						return;
+					case ErrorCodeHelper.RESULT_UNKNOWN_ERROR:
 					case ErrorCodeHelper.RESULT_CONNECTION_ERROR:
 						throw new IOException(result.Message);	// Force connection retry in PersistentDevice
 					default:
