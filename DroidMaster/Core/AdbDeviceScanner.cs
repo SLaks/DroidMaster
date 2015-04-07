@@ -26,10 +26,8 @@ namespace DroidMaster.Core {
 					discoveredDevices = AndroidDebugBridge.Instance.Devices;
 				} catch (SocketException) {
 					try {
-						var process = Process.Start("adb.exe", "start-server");
-						LogError("Starting ADB server...");
-						process.WaitForExit();
-					} catch (Win32Exception ex) {
+						TryStartServer();
+					} catch (Exception ex) {
 						LogError("Could not start adb.exe: " + ex.Message);
 						return;
 					}
@@ -56,6 +54,35 @@ namespace DroidMaster.Core {
 			});
 		}
 
+		static readonly object serverStartLock = new object();
+		void TryStartServer(bool isRetry = false) {
+			lock (serverStartLock) {
+				var process = Process.Start(new ProcessStartInfo("adb.exe", "start-server") {
+					RedirectStandardError = true,
+					UseShellExecute = false,
+					CreateNoWindow = true
+				});
+				if (!isRetry)
+					LogError("Starting ADB server...");
+				process.WaitForExit();
+				var error = process.StandardError.ReadToEnd();
+				if (string.IsNullOrWhiteSpace(error))
+					return;
+
+				// ADB can end up in a zombie state and require a hard restart
+				var deadADBs = Process.GetProcessesByName("adb");
+				if (isRetry || !deadADBs.Any())
+					throw new Exception("\r\n" + error.Trim());
+				else {
+					LogError($"Could not start adb.exe:\r\n{error.Trim()}\r\nKilling existing ADB process and retrying...");
+					foreach (var deadADB in deadADBs) {
+						try { deadADB.Kill(); } catch (IOException) { }	// Process has already exited
+					}
+					TryStartServer(isRetry: true);
+				}
+			}
+		}
+		
 		// ADB has no concept of searching for a single device ID.
 		public override Task ScanFor(string connectionId) => Scan();
 
