@@ -105,7 +105,7 @@ namespace DroidMaster.UI {
 			return GlobalValue(title, () => {
 				var dialog = new Microsoft.Win32.OpenFileDialog { Title = title, Filter = filter };
 				if (dialog.ShowDialog() != true)
-					return null;
+					throw new OperationCanceledException();
 				return dialog.FileName;
 			});
 		}
@@ -115,7 +115,7 @@ namespace DroidMaster.UI {
 			return GlobalValue(title, () => {
 				var dialog = new FolderBrowserDialog { Description = title };
 				if (dialog.ShowDialog() == DialogResult.Cancel)
-					return null;
+					throw new OperationCanceledException();
 				return dialog.SelectedPath;
 			});
 		}
