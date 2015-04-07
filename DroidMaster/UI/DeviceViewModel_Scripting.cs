@@ -81,18 +81,21 @@ namespace DroidMaster.UI {
 
 	///<summary>An object that is shared among all instances of a script running against multiple devices, allowing user prompts to happen just once.</summary>
 	public class ScriptContext {
-		readonly Dictionary<string, object> globalValues = new Dictionary<string, object>();
+		readonly Dictionary<string, Lazy<object>> globalValues = new Dictionary<string, Lazy<object>>();
 
 		///<summary>Computes a global value, exactly once per script execution.  All devices will share the same value.</summary>
 		/// <param name="key">The key of the value to compute.  This must be a unique string; it's used to link calls across devices.</param>
 		/// <param name="initializer">The function to compute the initial value.  This will be called exactly once, by the first script calling this method; all other calls will return the same result.</param>
-		public T GlobalValue<T>(string key, Func<T> initializer) {
-			object value;
-			if (globalValues.TryGetValue(key, out value))
-				return (T)value;
-			var result = initializer();
-			globalValues[key] = result;
-			return result;
+		public T GlobalValue<T>(string key, Func<T> initializer) where T : class {
+			// initializer may be re-entrant (if it shows a modal dialog after an await).
+			// Therefore, I store a Lazy<T> instance immediately so that re-entrant calls
+			// from other scripts wait for the same value.
+			Lazy<object> lazy;
+			if (!globalValues.TryGetValue(key, out lazy)) {
+				lazy = new Lazy<object>(initializer);
+				globalValues[key] = lazy;
+			}
+			return (T)lazy.Value;
 		}
 
 		///<summary>Prompts the user to select a file, once per batch of devices.</summary>
