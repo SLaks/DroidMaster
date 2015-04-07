@@ -36,6 +36,12 @@ namespace DroidMaster.Core {
 	///     when it errors, is replaced with a new connection or when the entire class is disposed.
 	///</remarks>
 	class PersistentDevice : NotifyPropertyChanged {
+		// ADB chokes on too much parallel activity.
+		// I apply the lock here, so that it can use
+		// our cancellation token, and to prevent it
+		// from blocking persistent ID discovery.
+		readonly SemaphoreSlim semaphore = new SemaphoreSlim(4);
+
 		///<summary>Controls reads and writes of <see cref="volatileDeviceSource"/>.</summary>
 		readonly AsyncReaderWriterLock sourceLock = new AsyncReaderWriterLock();
 		///<summary>The current device, if any, or a promise that will resolve to the current device once it arrives.</summary>
@@ -116,7 +122,8 @@ namespace DroidMaster.Core {
 						continue;
 					try {
 						// We already awaited currentSource.Task, so .Result is safe
-						return await operation(currentSource.Task.Result).ConfigureAwait(false);
+						using (await semaphore.DisposableWaitAsync(token).ConfigureAwait(false))
+							return await operation(currentSource.Task.Result).ConfigureAwait(false);
 						// If a connection-level error occurs, clear the device, then wait for the next connection.
 					} catch (SocketException ex) {
 						HandleConnectionError(currentSource, ex);
