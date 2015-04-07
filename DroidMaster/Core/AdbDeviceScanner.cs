@@ -31,7 +31,7 @@ namespace DroidMaster.Core {
 						process.WaitForExit();
 					} catch (Win32Exception ex) {
 						LogError("Could not start adb.exe: " + ex.Message);
-                        return;
+						return;
 					}
 					discoveredDevices = AndroidDebugBridge.Instance.Devices;
 				}
@@ -60,6 +60,9 @@ namespace DroidMaster.Core {
 		public override Task ScanFor(string connectionId) => Scan();
 
 		sealed class AdbDeviceConnection : IDeviceConnection {
+			// ADB chokes on too much parallel activity
+			readonly SemaphoreSlim semaphore = new SemaphoreSlim(4);
+
 			Device Device { get; }
 			public DeviceScanner Owner { get; }
 			public string ConnectionId => Device.SerialNumber;
@@ -68,12 +71,14 @@ namespace DroidMaster.Core {
 				Owner = owner;
 			}
 
-			public Task RebootAsync() {
-				return Task.Run(new Action(Device.Reboot));
+			public async Task RebootAsync() {
+				using (await semaphore.DisposableWaitAsync().ConfigureAwait(false))
+					await Task.Run(new Action(Device.Reboot));
 			}
 
-			public Task PullFileAsync(string devicePath, string localPath, CancellationToken token = default(CancellationToken), IProgress<double> progress = null) {
-				return Task.Run(() => AssertResult(Device.SyncService.PullFile(
+			public async Task PullFileAsync(string devicePath, string localPath, CancellationToken token = default(CancellationToken), IProgress<double> progress = null) {
+				using (await semaphore.DisposableWaitAsync().ConfigureAwait(false))
+					await Task.Run(() => AssertResult(Device.SyncService.PullFile(
 					// FindFileEntry(string) will recursively ls the parent
 					// directories, throwing errors within /data/local/tmp.
 					// Instead, I explicitly create an entry for the parent
@@ -85,21 +90,29 @@ namespace DroidMaster.Core {
 					CreateMonitor(token, progress)
 				)));
 			}
-			public Task PushFileAsync(string localPath, string devicePath, CancellationToken token = default(CancellationToken), IProgress<double> progress = null) {
-				return Task.Run(() => AssertResult(Device.SyncService.PushFile(localPath, devicePath, CreateMonitor(token, progress))));
+			public async Task PushFileAsync(string localPath, string devicePath, CancellationToken token = default(CancellationToken), IProgress<double> progress = null) {
+				using (await semaphore.DisposableWaitAsync().ConfigureAwait(false))
+					await Task.Run(() => AssertResult(Device.SyncService.PushFile(localPath, devicePath, CreateMonitor(token, progress))));
 			}
 			static ISyncProgressMonitor CreateMonitor(CancellationToken token, IProgress<double> progress) {
 				return progress != null ? new ProgressAdapter(token, progress) : (ISyncProgressMonitor)new NullSyncProgressMonitor();
 			}
 			static void AssertResult(SyncResult result) {
-				if (result.Code != ErrorCodeHelper.RESULT_OK)
-					throw new Exception(result.Message);
+				switch (result.Code) {
+					case ErrorCodeHelper.RESULT_OK:
+						return;
+					case ErrorCodeHelper.RESULT_CONNECTION_ERROR:
+						throw new IOException(result.Message);	// Force connection retry in PersistentDevice
+					default:
+						throw new Exception(result.Message);
+				}
 			}
 
 			public ICommandResult ExecuteShellCommand(string command) {
 				var result = new OutputReporter { CommandText = command };
-				result.Complete = Task.Run(() => {
-					AdbHelper.Instance.ExecuteRemoteCommand(AndroidDebugBridge.SocketAddress, command, Device, result);
+				result.Complete = Task.Run(async () => {
+					using (await semaphore.DisposableWaitAsync().ConfigureAwait(false))
+						AdbHelper.Instance.ExecuteRemoteCommand(AndroidDebugBridge.SocketAddress, command, Device, result);
 					return result.Output;
 				});
 				return result;
