@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
@@ -21,30 +22,36 @@ namespace DroidMaster.Models {
 	///<summary>A WPF-bindable status model that aggregates all active <see cref="ProgressModel"/>s for a device.</summary>
 	public class AggregateProgressModel : ProgressModel, IDisposable {
 		readonly DeviceModel deviceModel;
-		readonly List<ProgressModel> contributors = new List<ProgressModel>();
+		ImmutableStack<ProgressModel> contributors = ImmutableStack.Create<ProgressModel>();
 
 		internal AggregateProgressModel(string description, DeviceModel deviceModel) : base(description) {
 			this.deviceModel = deviceModel;
 			deviceModel.Status = this;
-			((INotifyCollectionChanged)deviceModel).CollectionChanged += Log_CollectionChanged;
-        }
+			((INotifyCollectionChanged)deviceModel.LogItems).CollectionChanged += Log_CollectionChanged;
+		}
 
 		private void Log_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e) {
 			foreach (var item in e.NewItems.OfType<ProgressModel>()) {
-				contributors.Add(item);
+				ImmutableInterlocked.Push(ref contributors, item);
 				item.PropertyChanged += delegate { RefreshProgress(); };
 			}
 			RefreshProgress();
 		}
 
 		void RefreshProgress() {
-			Progress = contributors.Average(p => p.Progress);
+			Progress = contributors
+				.Select(p => p.Progress)
+				.DefaultIfEmpty()
+				.Average();
 		}
+
+		///<summary>Indicates whether the operation is still active, and should suppress changes to <see cref="DeviceModel.Status"/>.</summary>
+		public bool IsActive { get; private set; } = true;
 
 		///<summary>Stops aggregating progress, clearing the <see cref="DeviceModel.Status"/> property.</summary>
 		public void Dispose() {
-			((INotifyCollectionChanged)deviceModel).CollectionChanged -= Log_CollectionChanged;
-			deviceModel.Status = null;
+			((INotifyCollectionChanged)deviceModel.LogItems).CollectionChanged -= Log_CollectionChanged;
+			IsActive = false;
 		}
 	}
 }

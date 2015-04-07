@@ -31,9 +31,9 @@ namespace DroidMaster.Models {
 		public object Status {
 			get { return status; }
 			set {
-				if (Status is AggregateProgressModel && value != null) {
+				if ((Status as AggregateProgressModel)?.IsActive == true)
 					return;
-				}
+
 				status = value;
 				OnPropertyChanged();
 			}
