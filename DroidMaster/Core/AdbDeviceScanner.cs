@@ -87,9 +87,6 @@ namespace DroidMaster.Core {
 		public override Task ScanFor(string connectionId) => Scan();
 
 		sealed class AdbDeviceConnection : IDeviceConnection {
-			// ADB chokes on too much parallel activity
-			readonly SemaphoreSlim semaphore = new SemaphoreSlim(8);
-
 			Device Device { get; }
 			public DeviceScanner Owner { get; }
 			public string ConnectionId => Device.SerialNumber;
@@ -98,31 +95,35 @@ namespace DroidMaster.Core {
 				Owner = owner;
 			}
 
-			public async Task RebootAsync() {
-				using (await semaphore.DisposableWaitAsync().ConfigureAwait(false))
-					await Task.Run(new Action(Device.Reboot));
+			public Task RebootAsync() {
+				return Task.Run(new Action(Device.Reboot));
 			}
 
-			public async Task PullFileAsync(string devicePath, string localPath, CancellationToken token = default(CancellationToken), IProgress<double> progress = null) {
-				using (await semaphore.DisposableWaitAsync().ConfigureAwait(false))
-				using (var syncService = new SyncService(Device))
-					await Task.Run(() => AssertResult(syncService.PullFile(
-					// FindFileEntry(string) will recursively ls the parent
-					// directories, throwing errors within /data/local/tmp.
-					// Instead, I explicitly create an entry for the parent
-					// directory, and find the file in that.
-					Device.FileListingService.FindFileEntry(
-						FileEntry.CreateNoPermissions(Device, LinuxPath.GetDirectoryName(devicePath)), devicePath
-					),
-					localPath,
-					CreateMonitor(token, progress)
-				)));
+			// The SyncService constructor opens a socket used by
+			// all calls on that instance. Therefore, SyncService
+			// instances must not be constructed on the UI thread
+			// and must not be shared across threads.
+			public Task PullFileAsync(string devicePath, string localPath, CancellationToken token = default(CancellationToken), IProgress<double> progress = null) {
+				return Task.Run(() => {
+					using (var syncService = new SyncService(Device))
+						return AssertResult(syncService.PullFile(
+						// FindFileEntry(string) will recursively ls the parent
+						// directories, throwing errors within /data/local/tmp.
+						// Instead, I explicitly create an entry for the parent
+						// directory, and find the file in that.
+						Device.FileListingService.FindFileEntry(
+							FileEntry.CreateNoPermissions(Device, LinuxPath.GetDirectoryName(devicePath)), devicePath
+						),
+						localPath,
+						CreateMonitor(token, progress)
+					));
+				});
 			}
-			public async Task PushFileAsync(string localPath, string devicePath, CancellationToken token = default(CancellationToken), IProgress<double> progress = null) {
-				using (await semaphore.DisposableWaitAsync().ConfigureAwait(false))
-				using (var syncService = new SyncService(Device))
-					await Task.Run(() => AssertResult(syncService.PushFile(localPath, devicePath, CreateMonitor(token, progress))));
-
+			public Task PushFileAsync(string localPath, string devicePath, CancellationToken token = default(CancellationToken), IProgress<double> progress = null) {
+				return Task.Run(() => {
+					using (var syncService = new SyncService(Device))
+						return AssertResult(syncService.PushFile(localPath, devicePath, CreateMonitor(token, progress)));
+				});
 			}
 			static ISyncProgressMonitor CreateMonitor(CancellationToken token, IProgress<double> progress) {
 				return progress != null ? new ProgressAdapter(token, progress) : (ISyncProgressMonitor)new NullSyncProgressMonitor();
@@ -141,9 +142,8 @@ namespace DroidMaster.Core {
 
 			public ICommandResult ExecuteShellCommand(string command) {
 				var result = new OutputReporter { CommandText = command };
-				result.Complete = Task.Run(async () => {
-					using (await semaphore.DisposableWaitAsync().ConfigureAwait(false))
-						AdbHelper.Instance.ExecuteRemoteCommand(AndroidDebugBridge.SocketAddress, command, Device, result);
+				result.Complete = Task.Run(() => {
+					AdbHelper.Instance.ExecuteRemoteCommand(AndroidDebugBridge.SocketAddress, command, Device, result);
 					return result.Output;
 				});
 				return result;
