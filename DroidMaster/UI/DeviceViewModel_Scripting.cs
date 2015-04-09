@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Threading;
 using DroidMaster.Models;
 using DroidMaster.Scripting;
 using Microsoft.Win32;
@@ -81,29 +82,31 @@ namespace DroidMaster.UI {
 
 	///<summary>An object that is shared among all instances of a script running against multiple devices, allowing user prompts to happen just once.</summary>
 	public class ScriptContext {
-		readonly Dictionary<string, Lazy<object>> globalValues = new Dictionary<string, Lazy<object>>();
+		///<summary>Gets the <see cref="Dispatcher"/> for the UI thread.</summary>
+		public Dispatcher Dispatcher { get; } = Dispatcher.CurrentDispatcher;
+		readonly Dictionary<string, object> globalValues = new Dictionary<string, object>();
 
-		///<summary>Computes a global value, exactly once per script execution.  All devices will share the same value.</summary>
+		///<summary>Computes a global value, exactly once per script execution.  All devices will share the same value.  This can only be called on the UI thread.</summary>
 		/// <param name="key">The key of the value to compute.  This must be a unique string; it's used to link calls across devices.</param>
-		/// <param name="initializer">The function to compute the initial value.  This will be called exactly once, by the first script calling this method; all other calls will return the same result.</param>
+		/// <param name="initializer">The function to compute the initial value.  This will be called exactly once, by the first script calling this method; all other calls will return the same result.  This must not be synchronously reentrant, but may return a Task, which can continue asynchronously after the scripts exit <see cref="GlobalValue"/>.</param>
 		public T GlobalValue<T>(string key, Func<T> initializer) where T : class {
-			// initializer may be re-entrant (if it shows a modal dialog after an await).
-			// Therefore, I store a Lazy<T> instance immediately so that re-entrant calls
-			// from other scripts wait for the same value.
-			Lazy<object> lazy;
-			if (!globalValues.TryGetValue(key, out lazy)) {
-				lazy = new Lazy<object>(initializer);
-				globalValues[key] = lazy;
+			if (Thread.CurrentThread != Dispatcher.Thread)
+				throw new InvalidOperationException("GlobalValue must be called on the UI thread.");
+			object result;
+			if (!globalValues.TryGetValue(key, out result)) {
+				result = initializer();
+				globalValues[key] = result;
 			}
-			return (T)lazy.Value;
+			return (T)result;
 		}
 
 		///<summary>Prompts the user to select a file, once per batch of devices.</summary>
 		/// <param name="title">The title of the dialog.  This is also used as the global context key, and must be unique.</param>
 		/// <param name="filter">The options for the file type, separated by | characters.</param>
-		public string PickFile(string title, string filter) {
-			return GlobalValue(title, () => {
+		public Task<string> PickFile(string title, string filter) {
+			return GlobalValue(title, async () => {
 				var dialog = new Microsoft.Win32.OpenFileDialog { Title = title, Filter = filter };
+				await Dispatcher.Yield();	// Make sure the reentrant ShowDialog() call runs outside the GlobalValue callback
 				if (dialog.ShowDialog() != true)
 					throw new OperationCanceledException();
 				return dialog.FileName;
@@ -111,9 +114,10 @@ namespace DroidMaster.UI {
 		}
 		///<summary>Prompts the user to select a directory, once per batch of devices.</summary>
 		/// <param name="title">The description of the dialog.  This is also used as the global context key, and must be unique.</param>
-		public string PickFolder(string title) {
-			return GlobalValue(title, () => {
+		public Task<string> PickFolder(string title) {
+			return GlobalValue(title, async () => {
 				var dialog = new FolderBrowserDialog { Description = title };
+				await Dispatcher.Yield();	// Make sure the reentrant ShowDialog() call runs outside the GlobalValue callback
 				if (dialog.ShowDialog() == DialogResult.Cancel)
 					throw new OperationCanceledException();
 				return dialog.SelectedPath;
