@@ -132,6 +132,8 @@ namespace DroidMaster.Core {
 				switch (result.Code) {
 					case ErrorCodeHelper.RESULT_OK:
 						return;
+					case ErrorCodeHelper.RESULT_CANCELED:
+						throw new OperationCanceledException();
 					case ErrorCodeHelper.RESULT_UNKNOWN_ERROR:
 					case ErrorCodeHelper.RESULT_CONNECTION_ERROR:
 						throw new IOException(result.Message);	// Force connection retry in PersistentDevice
