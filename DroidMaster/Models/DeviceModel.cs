@@ -103,8 +103,11 @@ namespace DroidMaster.Models {
 		public async Task InstallPackage(string apkPath) {
 			var tempPath = TempPath + Guid.NewGuid();
 			await PushFile(apkPath, tempPath);
-			await ExecuteShellCommand($"pm install {tempPath} && rm {tempPath}");
-		}
+			var output = await ExecuteShellCommand($"pm install {tempPath} && rm {tempPath}");
+			if (output.Contains("Failure"))
+				throw new InvalidOperationException($"Couldn't install {Path.GetFileName(apkPath)}: " +
+													output.Substring(output.IndexOf("Failure")));
+        }
 		#endregion
 	}
 
