@@ -139,7 +139,8 @@ in different languages do not reference each-other.";
 				selectedFile = value;
 				OnPropertyChanged();
 				OnPropertyChanged(nameof(HasSelectedFile));
-				WorkspaceCreator.Workspace.ActiveDocumentId = WorkspaceCreator.DocumentIds[value.Document.FilePath];
+				if (value != null)
+					WorkspaceCreator.Workspace.ActiveDocumentId = WorkspaceCreator.DocumentIds[value.Document.FilePath];
 			}
 		}
 		public bool HasSelectedFile => SelectedFile != null;
