@@ -24,6 +24,11 @@ namespace DroidMaster.Scripting.Editor {
 			DataContext = viewModel = viewModelFactory.CreateExport().Value;
 			viewModel.WorkspaceCreator.ScriptDirectory = App.ScriptDirectory;
 			RefreshOpenMenu();
+
+			Application.Current.Resources.MergedDictionaries.Add(new VSEmbed.VsThemeDictionary { ThemeIndex = 3 });
+			Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary {
+				Source = new Uri("/Microsoft.VisualStudio.Editor.Implementation;component/Themes/Generic.xaml", UriKind.Relative)
+			});
 		}
 
 		private void OpenMenu_SubmenuOpened(object sender, RoutedEventArgs e) {
