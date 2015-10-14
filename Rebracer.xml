@@ -78,7 +78,7 @@
         <PropertyValue name="NewLines_Braces_ControlFlow">0</PropertyValue>
         <PropertyValue name="NewLines_Braces_LambdaExpressionBody">0</PropertyValue>
         <PropertyValue name="NewLines_Braces_Method">0</PropertyValue>
-        <PropertyValue name="NewLines_Braces_ObjectInitializer">1</PropertyValue>
+        <PropertyValue name="NewLines_Braces_ObjectInitializer">0</PropertyValue>
         <PropertyValue name="NewLines_Braces_Type">0</PropertyValue>
         <PropertyValue name="NewLines_Keywords_Catch">0</PropertyValue>
         <PropertyValue name="NewLines_Keywords_Else">0</PropertyValue>
@@ -92,6 +92,7 @@
         <PropertyValue name="RemoveParameters_PreviewReferenceChanges">1</PropertyValue>
         <PropertyValue name="RemoveUnusedUsings">1</PropertyValue>
         <PropertyValue name="RenameSmartTagEnabled">1</PropertyValue>
+        <PropertyValue name="RenameTrackingPreview">1</PropertyValue>
         <PropertyValue name="Rename_Comments">0</PropertyValue>
         <PropertyValue name="Rename_Overloads">0</PropertyValue>
         <PropertyValue name="Rename_Preview">1</PropertyValue>

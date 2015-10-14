@@ -30,13 +30,13 @@ namespace DroidMaster.Scripting {
 		}
 
 		protected override MetadataReference CreateFrameworkReference(string assemblyName)
-			=> MetadataReference.CreateFromAssembly(
+			=> MetadataReference.CreateFromFile(
 				Assembly.Load(assemblyName + (assemblyName.Contains("VisualBasic") ?
 					", Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a"
 				  : ",  Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
-			)));
+			)).Location);
 		protected override MetadataReference CreateLocalReference(Assembly assembly)
-			=> MetadataReference.CreateFromAssembly(assembly);
+			=> MetadataReference.CreateFromFile(assembly.Location);
 
 		static async Task<Assembly> LoadProject(Project project, CancellationToken cancellationToken) {
 			var stream = new MemoryStream();

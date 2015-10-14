@@ -52,6 +52,10 @@ namespace DroidMaster.Scripting.Editor {
 		///<summary>Maps full paths on disk to <see cref="IProjectionBufferBase"/>s to show in the editor.</summary>
 		public IReadOnlyDictionary<string, IProjectionBufferBase> EditorBuffers => editorBuffers;
 
+		readonly Dictionary<string, DocumentId> documentIds = new Dictionary<string, DocumentId>(StringComparer.OrdinalIgnoreCase);
+		///<summary>Maps full paths on disk to Roslyn <see cref="DocumentId"/>s for the open documents.</summary>
+		public IReadOnlyDictionary<string, DocumentId> DocumentIds => documentIds;
+
 		protected override MetadataReference CreateLocalReference(Assembly assembly) {
 			var xmlDocFile = Path.ChangeExtension(assembly.Location, ".xml");
 			return MetadataReference.CreateFromFile(assembly.Location,
@@ -106,7 +110,7 @@ namespace DroidMaster.Scripting.Editor {
 				UndoRegistry.RegisterHistory(elisionBuffer);
 			}
 
-			Workspace.CreateDocument(projectId, elisionBuffer.SourceBuffers[0]);
+			documentIds[path] = Workspace.CreateDocument(projectId, elisionBuffer.SourceBuffers[0]);
 		}
 
 		protected override void CloseDocument(DocumentId documentId) {

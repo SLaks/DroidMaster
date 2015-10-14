@@ -135,7 +135,12 @@ in different languages do not reference each-other.";
 		ScriptFileViewModel selectedFile;
 		public ScriptFileViewModel SelectedFile {
 			get { return selectedFile; }
-			set { selectedFile = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasSelectedFile)); }
+			set {
+				selectedFile = value;
+				OnPropertyChanged();
+				OnPropertyChanged(nameof(HasSelectedFile));
+				WorkspaceCreator.Workspace.ActiveDocumentId = WorkspaceCreator.DocumentIds[value.Document.FilePath];
+			}
 		}
 		public bool HasSelectedFile => SelectedFile != null;
 	}
@@ -152,6 +157,7 @@ in different languages do not reference each-other.";
 			TextView.TextView.Options.SetOptionValue(DefaultTextViewHostOptions.ChangeTrackingId, true);
 			TextView.TextView.Options.SetOptionValue(DefaultTextViewHostOptions.ShowScrollBarAnnotationsOptionId, true);
 			TextView.TextView.Options.SetOptionValue(DefaultTextViewHostOptions.ShowEnhancedScrollBarOptionId, true);
+			TextView.TextView.Options.SetOptionValue(DefaultTextViewHostOptions.SuggestionMarginId, true);
 		}
 
 		// This is necessary to tell TextView-level exports the correct
