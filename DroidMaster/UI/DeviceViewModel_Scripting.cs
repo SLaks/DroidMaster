@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -61,7 +62,7 @@ namespace DroidMaster.UI {
 					Log($"An error occurred while running {name}:\r\n{ex}");
 				}
 				Device.CancellationToken = null;
-				(Status as AggregateProgressModel)?.Dispose();	// Don't leak progress suppression
+				(Status as AggregateProgressModel)?.Dispose();  // Don't leak progress suppression
 			}
 		}
 	}
@@ -82,6 +83,9 @@ namespace DroidMaster.UI {
 
 	///<summary>An object that is shared among all instances of a script running against multiple devices, allowing user prompts to happen just once.</summary>
 	public class ScriptContext {
+		///<summary>Holds the last file selected for each unique filter string.</summary>
+		static readonly ConcurrentDictionary<string, string> lastPickedFiles = new ConcurrentDictionary<string, string>();
+
 		///<summary>Gets the <see cref="Dispatcher"/> for the UI thread.</summary>
 		public Dispatcher Dispatcher { get; } = Dispatcher.CurrentDispatcher;
 		readonly Dictionary<string, object> globalValues = new Dictionary<string, object>();
@@ -105,10 +109,13 @@ namespace DroidMaster.UI {
 		/// <param name="filter">The options for the file type, separated by | characters.</param>
 		public Task<string> PickFile(string title, string filter) {
 			return GlobalValue(title, async () => {
-				var dialog = new Microsoft.Win32.OpenFileDialog { Title = title, Filter = filter };
-				await Dispatcher.Yield();	// Make sure the reentrant ShowDialog() call runs outside the GlobalValue callback
+				string lastFile;
+				lastPickedFiles.TryGetValue(filter, out lastFile);
+				var dialog = new Microsoft.Win32.OpenFileDialog { Title = title, Filter = filter, FileName = lastFile };
+				await Dispatcher.Yield();   // Make sure the reentrant ShowDialog() call runs outside the GlobalValue callback
 				if (dialog.ShowDialog() != true)
 					throw new OperationCanceledException();
+				lastPickedFiles[filter] = dialog.FileName;
 				return dialog.FileName;
 			});
 		}
@@ -117,7 +124,7 @@ namespace DroidMaster.UI {
 		public Task<string> PickFolder(string title) {
 			return GlobalValue(title, async () => {
 				var dialog = new FolderBrowserDialog { Description = title };
-				await Dispatcher.Yield();	// Make sure the reentrant ShowDialog() call runs outside the GlobalValue callback
+				await Dispatcher.Yield();   // Make sure the reentrant ShowDialog() call runs outside the GlobalValue callback
 				if (dialog.ShowDialog() == DialogResult.Cancel)
 					throw new OperationCanceledException();
 				return dialog.SelectedPath;
