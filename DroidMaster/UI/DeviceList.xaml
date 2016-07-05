@@ -68,12 +68,17 @@
 			</Menu>
 			<Button Content="Cancel" ToolTip="Cancels any scripts that are still running on the selected devices."
 					Command="{Binding CancelScriptsCommand}" CommandParameter="{Binding SelectedItems, ElementName=devices}" />
+			
+			<Separator />
+			<Label>Last script: </Label>
+			<Button Content="{Binding LastScript}" ToolTip="The most-recently executed script."
+					Command="{Binding LastScript}" CommandParameter="{Binding SelectedItems, ElementName=devices}" />
 			<Separator />
 			<Button Content="Hide Disconnected Devices" ToolTip="Removes all disconnected devices from the grid.  If any of the devices come back online, they will reappear in the grid."
 					Command="{Binding HideDisconnectedCommand}" />
 		</ToolBar>
-		<DataGrid Grid.Row="1" ItemsSource="{Binding ActiveDevices}" Name="devices" 
-				  HeadersVisibility="Column" HorizontalGridLinesBrush="#DDD" GridLinesVisibility="Horizontal" 
+		<DataGrid Grid.Row="1" ItemsSource="{Binding ActiveDevices}" Name="devices"
+				  HeadersVisibility="Column" HorizontalGridLinesBrush="#DDD" GridLinesVisibility="Horizontal"
 				  IsReadOnly="True" AutoGenerateColumns="False">
 			<DataGrid.CellStyle>
 				<Style TargetType="DataGridCell">
@@ -138,7 +143,7 @@
 								</Grid.RowDefinitions>
 								<Border Width="6" Background="Black" />
 								<Border Width="12" Grid.Row="1" BorderBrush="Black" BorderThickness="2">
-									<ProgressBar Value="{Binding BatteryLevel, Mode=OneWay}" Orientation="Vertical" Name="bar" 
+									<ProgressBar Value="{Binding BatteryLevel, Mode=OneWay}" Orientation="Vertical" Name="bar"
 												 Foreground="{Binding BatteryColor}" Background="White">
 										<ProgressBar.Template>
 											<ControlTemplate TargetType="{x:Type ProgressBar}">
@@ -155,7 +160,7 @@
 										</ProgressBar.Template>
 									</ProgressBar>
 								</Border>
-								<Image Width="6" Source="{StaticResource ChargingIcon}" Grid.Row="1" 
+								<Image Width="6" Source="{StaticResource ChargingIcon}" Grid.Row="1"
 									   Visibility="{Binding IsPowered, Converter={StaticResource boolToVisibility}}" />
 							</Grid>
 						</DataTemplate>
@@ -172,7 +177,7 @@
 					</DataGridTemplateColumn.Header>
 					<DataGridTemplateColumn.CellTemplate>
 						<DataTemplate>
-							<Button HorizontalAlignment="Center" Padding="2" Background="#66DDDDDD" Command="{Binding ToggleScreenCommand}" 
+							<Button HorizontalAlignment="Center" Padding="2" Background="#66DDDDDD" Command="{Binding ToggleScreenCommand}"
 									IsEnabled="{Binding IsOnline}" ToolTip="Screen is off.&#13;Click to turn on." Name="button">
 								<Border CornerRadius="2" BorderThickness="2" Width="22" Height="16" BorderBrush="Black">
 									<Border BorderThickness="2" BorderBrush="Black" Margin="-1" Padding="1">
@@ -209,7 +214,7 @@
 				<DataGridTemplateColumn SortMemberPath="IsWiFiEnabled" Header="Wi-Fi">
 					<DataGridTemplateColumn.CellTemplate>
 						<DataTemplate>
-							<Button Padding="2 4" Width="26" Height="21" Background="#66DDDDDD" 
+							<Button Padding="2 4" Width="26" Height="21" Background="#66DDDDDD"
 									IsEnabled="{Binding IsOnline}" Command="{Binding ToggleWiFiCommand}">
 								<Image Source="{StaticResource WiFiIcon}"
 									   Visibility="{Binding IsWiFiEnabled, Converter={StaticResource boolToVisibility}}" />
@@ -296,7 +301,7 @@
 		</ScrollViewer>
 		<GridSplitter Grid.Row="1" Grid.RowSpan="3" Grid.Column="1" HorizontalAlignment="Stretch" Width="4" />
 		<TabControl Grid.Row="1" Grid.Column="2" Grid.RowSpan="3"
-					ItemsSource="{Binding SelectedItems, ElementName=devices}" 
+					ItemsSource="{Binding SelectedItems, ElementName=devices}"
 					SelectedValue="{Binding SelectedValue, ElementName=devices, Mode=OneWay}">
 			<TabControl.ItemTemplate>
 				<DataTemplate>

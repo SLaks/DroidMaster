@@ -54,7 +54,7 @@ namespace DroidMaster.UI {
 			await Refresh();
 		});
 		public ActionCommand ToggleWiFiCommand => new ActionCommand(async () => {
-			await Refresh();	// TODO: Does this need root?
+			await Refresh();    // TODO: Does this need root?
 			await HandleErrors(d => d.Device.ExecuteShellCommand("svc wifi " + (IsWiFiEnabled ? "disable" : "enable")).Complete);
 			await Refresh();
 		});
@@ -72,6 +72,20 @@ namespace DroidMaster.UI {
 			d.Device.CancellationToken?.Cancel();
 			return Task.CompletedTask;
 		});
+
+		ICommand lastScript = new NullScriptCommand();
+		///<summary>Gets or sets the most recently executed script.</summary>
+		public ICommand LastScript {
+			get { return lastScript; }
+			set { lastScript = value; OnPropertyChanged(); }
+		}
+	}
+
+	class NullScriptCommand : ICommand {
+		public override string ToString() => "(None)";
+		public event EventHandler CanExecuteChanged { add { } remove { } }
+		public bool CanExecute(object parameter) => false;
+		public void Execute(object parameter) { throw new NotSupportedException(); }
 	}
 
 	class ScriptCommand : ICommand {
@@ -89,6 +103,7 @@ namespace DroidMaster.UI {
 		public override string ToString() => Path.GetFileName(scriptFile);
 
 		public async void Execute(object parameter) {
+			deviceListViewModel.LastScript = this;
 			DeviceScript script;
 			try {
 				var workspace = new RuntimeWorkspaceCreator { ScriptDirectory = Path.GetDirectoryName(scriptFile) };
